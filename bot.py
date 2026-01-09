@@ -59,7 +59,7 @@ async def cmd_start(message: types.Message):
         reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
             [types.InlineKeyboardButton(
                 text="🎁 Подобрать подарок",
-                web_app=types.WebAppInfo(url="https://timetoshame.github.io/GTW/frontend/index.html?v=9")
+                web_app=types.WebAppInfo(url="https://timetoshame.github.io/GTW/frontend/index.html?v=10")
             )]
         ])
     )

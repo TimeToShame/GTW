@@ -1162,16 +1162,26 @@ function saveNewPerson() {
     loadFriendChips();
 }
         
-        // Поделиться ссылкой-приглашением
-        function shareInviteLink() {
-            const botUsername = 'whataagift_bot'; // Замените на username вашего бота
-            const userId = tg.initDataUnsafe?.user?.id || 'unknown';
-            const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
-            
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent('Добавь меня в свои близкие в боте для подбора подарков!')}`;
-            
-            tg.openLink(shareUrl);
-        }
+       // Поделиться ссылкой-приглашением
+function shareInviteLink() {
+    const botUsername = 'whataagift_bot'; // Ваш username бота
+    const userId = tg.initDataUnsafe?.user?.id || 'unknown';
+    const userName = tg.initDataUnsafe?.user?.first_name || 'Друг';
+    
+    const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
+    
+    const shareText = `${userName} приглашает тебя в бот для подбора подарков! 🎁\n\nПрисоединяйся:`;
+    
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(shareText)}`;
+    
+    tg.openLink(shareUrl);
+    
+    // Закрываем модальное окно после отправки
+    closeAddPersonModal();
+    
+    // Показываем подсказку
+    alert('Когда ваш друг перейдет по ссылке, он автоматически появится в списке близких!');
+}
         
         // Переключение режима удаления
         function toggleDeleteMode() {
