@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подбор подарков</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        button:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 Подбор подарка</h1>
+        
+        <form id="giftForm">
+            <div class="form-group">
+                <label for="name">Имя получателя</label>
+                <input type="text" id="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Пол</label>
+                <select id="gender" required>
+                    <option value="">Выберите...</option>
+                    <option value="male">Мужской</option>
+                    <option value="female">Женский</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthdate">Дата рождения</label>
+                <input type="date" id="birthdate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="interests">Интересы</label>
+                <textarea id="interests" placeholder="Опишите интересы человека..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="event">Событие</label>
+                <select id="event" required>
+                    <option value="">Выберите...</option>
+                    <option value="birthday">День рождения</option>
+                    <option value="new_year">Новый год</option>
+                    <option value="anniversary">Годовщина</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="budget">Бюджет (₽)</label>
+                <input type="number" id="budget" min="0" step="100" required>
+            </div>
+            
+            <button type="submit">Подобрать подарок</button>
+        </form>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на весь экран
+        
+        // Обработка формы
+        document.getElementById('giftForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Собираем данные
+            const data = {
+                name: document.getElementById('name').value,
+                gender: document.getElementById('gender').value,
+                birthdate: document.getElementById('birthdate').value,
+                interests: document.getElementById('interests').value,
+                event: document.getElementById('event').value,
+                budget: document.getElementById('budget').value
+            };
+            
+            // Отправляем данные боту
+            tg.sendData(JSON.stringify(data));
+            
+            // Закрываем Mini App
+            tg.close();
+        });
+    </script>
+</body>
+</html>
