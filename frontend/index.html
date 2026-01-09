@@ -627,264 +627,286 @@
         </div>
     </div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        let currentFriend = null;
-        
-        // Навигация между страницами
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.getElementById(pageId).classList.add('active');
-            
-            if (pageId === 'peoplePage') {
-                loadPeopleList();
-            } else if (pageId === 'giftPage') {
-                loadFriendChips();
-            }
-        }
-        
-        // Генерация дней
-        const daySelect = document.getElementById('day');
-        for (let i = 1; i <= 31; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = i;
-            daySelect.appendChild(option);
-        }
-        
-        // Генерация месяцев
-        const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
-                        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-        const monthSelect = document.getElementById('month');
-        months.forEach((month, index) => {
-            const option = document.createElement('option');
-            option.value = index + 1;
-            option.textContent = month;
-            monthSelect.appendChild(option);
+   <script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    
+    let currentFriend = null;
+    let selectedPersonIndex = null;
+    
+    // Навигация между страницами
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
         });
+        document.getElementById(pageId).classList.add('active');
         
-        // Генерация годов
-        const yearSelect = document.getElementById('year');
-        const currentYear = new Date().getFullYear();
-        for (let i = currentYear; i >= currentYear - 100; i--) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = i;
-            yearSelect.appendChild(option);
+        if (pageId === 'peoplePage') {
+            loadPeopleList();
+        } else if (pageId === 'giftPage') {
+            loadFriendChips();
         }
-        
-        // Синхронизация бюджета (новый получатель)
-        const budgetSlider = document.getElementById('budgetSlider');
-        const budgetInput = document.getElementById('budgetInput');
-        
-        budgetSlider.addEventListener('input', function() {
-            budgetInput.value = this.value;
-        });
-        
-        budgetInput.addEventListener('input', function() {
-            let value = parseInt(this.value) || 0;
-            if (value >= 500 && value <= 100000) {
-                budgetSlider.value = value;
-            }
-        });
-        
-        // Синхронизация бюджета (существующий)
-        const budgetSliderExisting = document.getElementById('budgetSliderExisting');
-        const budgetInputExisting = document.getElementById('budgetInputExisting');
-        
-        budgetSliderExisting.addEventListener('input', function() {
-            budgetInputExisting.value = this.value;
-        });
-        
-        budgetInputExisting.addEventListener('input', function() {
-            let value = parseInt(this.value) || 0;
-            if (value >= 500 && value <= 100000) {
-                budgetSliderExisting.value = value;
-            }
-        });
-        
-        // Загрузка чипсов друзей
-        function loadFriendChips() {
-            const saved = localStorage.getItem('savedPeople');
-            const container = document.getElementById('friendChips');
-            
-            container.innerHTML = '<div class="friend-chip add-new" onclick="selectFriend(null)">+ Новый получатель</div>';
-            
-            if (saved) {
-                const people = JSON.parse(saved);
-                people.forEach(person => {
-                    const chip = document.createElement('div');
-                    chip.className = 'friend-chip';
-                    chip.textContent = person.name;
-                    chip.onclick = () => selectFriend(person);
-                    container.appendChild(chip);
-                });
-            }
-            
-            // Выбираем первый чип
-            if (!currentFriend) {
-                selectFriend(null);
-            }
+    }
+    
+    // Генерация дней
+    const daySelect = document.getElementById('day');
+    for (let i = 1; i <= 31; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        daySelect.appendChild(option);
+    }
+    
+    // Генерация месяцев
+    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    const monthSelect = document.getElementById('month');
+    months.forEach((month, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = month;
+        monthSelect.appendChild(option);
+    });
+    
+    // Генерация годов
+    const yearSelect = document.getElementById('year');
+    const currentYear = new Date().getFullYear();
+    for (let i = currentYear; i >= currentYear - 100; i--) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        yearSelect.appendChild(option);
+    }
+    
+    // Синхронизация бюджета (новый получатель)
+    const budgetSlider = document.getElementById('budgetSlider');
+    const budgetInput = document.getElementById('budgetInput');
+    
+    budgetSlider.addEventListener('input', function() {
+        budgetInput.value = this.value;
+    });
+    
+    budgetInput.addEventListener('input', function() {
+        let value = parseInt(this.value) || 0;
+        if (value >= 500 && value <= 100000) {
+            budgetSlider.value = value;
         }
-        
-        // Выбор друга
-        function selectFriend(person) {
-            currentFriend = person;
-            
-            // Обновляем активный чип
-            document.querySelectorAll('.friend-chip').forEach(chip => {
-                chip.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-            
-            // Показываем нужную форму
-            if (person === null) {
-                document.getElementById('newPersonForm').classList.add('active');
-                document.getElementById('existingPersonForm').classList.remove('active');
-                clearNewPersonForm();
-            } else {
-                document.getElementById('newPersonForm').classList.remove('active');
-                document.getElementById('existingPersonForm').classList.add('active');
-                loadExistingPerson(person);
-            }
+    });
+    
+    // Синхронизация бюджета (существующий)
+    const budgetSliderExisting = document.getElementById('budgetSliderExisting');
+    const budgetInputExisting = document.getElementById('budgetInputExisting');
+    
+    budgetSliderExisting.addEventListener('input', function() {
+        budgetInputExisting.value = this.value;
+    });
+    
+    budgetInputExisting.addEventListener('input', function() {
+        let value = parseInt(this.value) || 0;
+        if (value >= 500 && value <= 100000) {
+            budgetSliderExisting.value = value;
         }
+    });
+    
+    // Загрузка чипсов друзей
+    function loadFriendChips() {
+        const saved = localStorage.getItem('savedPeople');
+        const container = document.getElementById('friendChips');
         
-        // Очистка формы нового получателя
-        function clearNewPersonForm() {
-            document.getElementById('name').value = '';
-            document.getElementById('gender').value = '';
-            document.getElementById('day').value = '';
-            document.getElementById('month').value = '';
-            document.getElementById('year').value = '';
-            document.getElementById('interests').value = '';
-            document.getElementById('event').value = '';
-            document.getElementById('budgetInput').value = 5000;
-            document.getElementById('budgetSlider').value = 5000;
-        }
+        container.innerHTML = '<div class="friend-chip add-new" onclick="selectFriend(null, -1)">+ Новый получатель</div>';
         
-        // Загрузка данных существующего человека
-        function loadExistingPerson(person) {
-            document.getElementById('eventExisting').value = person.event || '';
-            const budget = person.budget || 5000;
-            document.getElementById('budgetInputExisting').value = budget;
-            if (budget >= 500 && budget <= 100000) {
-                document.getElementById('budgetSliderExisting').value = budget;
-            }
-        }
-        
-        // Отправка для существующего человека
-        function submitExistingPerson() {
-            const data = {
-                ...currentFriend,
-                event: document.getElementById('eventExisting').value,
-                budget: document.getElementById('budgetInputExisting').value
-            };
-            
-            tg.sendData(JSON.stringify(data));
-            tg.close();
-        }
-        
-        // Список людей
-        function loadPeopleList() {
-            const saved = localStorage.getItem('savedPeople');
-            const listContainer = document.getElementById('peopleList');
-            const emptyState = document.getElementById('emptyPeople');
-            
-            if (!saved || JSON.parse(saved).length === 0) {
-                listContainer.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
+        if (saved) {
             const people = JSON.parse(saved);
-            listContainer.innerHTML = '';
-            
-            people.forEach(person => {
-                const card = document.createElement('div');
-                card.className = 'person-card';
-                
-                const genderIcon = person.gender === 'male' ? '👨' : person.gender === 'female' ? '👩' : '👤';
-                const age = person.age ? `${person.age} лет` : 'Возраст не указан';
-                const interests = person.interests ? person.interests.substring(0, 50) + '...' : 'Интересы не указаны';
-                
-                card.innerHTML = `
-                    <div class="person-name">${genderIcon} ${person.name || 'Без имени'}</div>
-                    <div class="person-info">${age}</div>
-                    <div class="person-details">${interests}</div>
-                `;
-                
-                card.onclick = () => {
-                    showPage('giftPage');
-                    setTimeout(() => selectFriend(person), 100);
-                };
-                
-                listContainer.appendChild(card);
+            people.forEach((person, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'friend-chip';
+                chip.textContent = person.name;
+                chip.onclick = () => selectFriend(person, index);
+                container.appendChild(chip);
             });
         }
         
-        // Сохранение человека
-        function savePerson(data) {
-            const saved = localStorage.getItem('savedPeople');
-            let people = saved ? JSON.parse(saved) : [];
-            
-            if (data.birthdate) {
-                const birthDate = new Date(data.birthdate);
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                data.age = age;
-            }
-            
-            const existingIndex = people.findIndex(p => p.name === data.name);
-            if (existingIndex >= 0) {
-                people[existingIndex] = data;
-            } else {
-                people.push(data);
-            }
-            
-            localStorage.setItem('savedPeople', JSON.stringify(people));
+        // Выбираем "Новый получатель" по умолчанию
+        if (selectedPersonIndex === null) {
+            selectFriend(null, -1);
+            // Добавляем selected класс к первому чипу
+            container.querySelector('.add-new').classList.add('selected');
+        }
+    }
+    
+    // Выбор друга
+    function selectFriend(person, index) {
+        currentFriend = person;
+        selectedPersonIndex = index;
+        
+        // Обновляем активный чип
+        document.querySelectorAll('.friend-chip').forEach(chip => {
+            chip.classList.remove('selected');
+        });
+        event.target.classList.add('selected');
+        
+        // Показываем нужную форму
+        if (person === null) {
+            document.getElementById('newPersonForm').classList.add('active');
+            document.getElementById('existingPersonForm').classList.remove('active');
+            clearNewPersonForm();
+        } else {
+            document.getElementById('newPersonForm').classList.remove('active');
+            document.getElementById('existingPersonForm').classList.add('active');
+            loadExistingPerson(person);
+        }
+    }
+    
+    // Очистка формы нового получателя
+    function clearNewPersonForm() {
+        document.getElementById('name').value = '';
+        document.getElementById('gender').value = '';
+        document.getElementById('day').value = '';
+        document.getElementById('month').value = '';
+        document.getElementById('year').value = '';
+        document.getElementById('interests').value = '';
+        document.getElementById('event').value = '';
+        document.getElementById('budgetInput').value = 5000;
+        document.getElementById('budgetSlider').value = 5000;
+    }
+    
+    // Загрузка данных существующего человека
+    function loadExistingPerson(person) {
+        document.getElementById('eventExisting').value = person.event || '';
+        const budget = person.budget || 5000;
+        document.getElementById('budgetInputExisting').value = budget;
+        if (budget >= 500 && budget <= 100000) {
+            document.getElementById('budgetSliderExisting').value = budget;
+        }
+    }
+    
+    // Отправка для существующего человека
+    function submitExistingPerson() {
+        const data = {
+            ...currentFriend,
+            event: document.getElementById('eventExisting').value,
+            budget: document.getElementById('budgetInputExisting').value
+        };
+        
+        tg.sendData(JSON.stringify(data));
+        tg.close();
+    }
+    
+    // Список людей
+    function loadPeopleList() {
+        const saved = localStorage.getItem('savedPeople');
+        const listContainer = document.getElementById('peopleList');
+        const emptyState = document.getElementById('emptyPeople');
+        
+        if (!saved || JSON.parse(saved).length === 0) {
+            listContainer.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
         }
         
-        // Инициализация при загрузке
-        loadFriendChips();
+        emptyState.style.display = 'none';
+        const people = JSON.parse(saved);
+        listContainer.innerHTML = '';
         
-        // Обработка формы
-        document.getElementById('giftForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        people.forEach((person, index) => {
+            const card = document.createElement('div');
+            card.className = 'person-card';
             
-            const day = document.getElementById('day').value;
-            const month = document.getElementById('month').value;
-            const year = document.getElementById('year').value;
+            const genderIcon = person.gender === 'male' ? '👨' : person.gender === 'female' ? '👩' : '👤';
+            const age = person.age ? `${person.age} лет` : 'Возраст не указан';
+            const interests = person.interests ? person.interests.substring(0, 50) + '...' : 'Интересы не указаны';
             
-            let birthdate = '';
-            if (day && month && year) {
-                birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            }
+            card.innerHTML = `
+                <div class="person-name">${genderIcon} ${person.name || 'Без имени'}</div>
+                <div class="person-info">${age}</div>
+                <div class="person-details">${interests}</div>
+            `;
             
-            const data = {
-                name: document.getElementById('name').value,
-                gender: document.getElementById('gender').value,
-                birthdate: birthdate,
-                interests: document.getElementById('interests').value,
-                event: document.getElementById('event').value,
-                budget: document.getElementById('budgetInput').value
+            card.onclick = () => {
+                showPage('giftPage');
+                setTimeout(() => {
+                    // Находим нужный чип и кликаем на него
+                    const chips = document.querySelectorAll('.friend-chip');
+                    if (chips[index + 1]) { // +1 потому что первый чип это "Новый получатель"
+                        chips[index + 1].click();
+                    }
+                }, 100);
             };
             
-            if (data.name) {
-                savePerson(data);
-            }
-            
-            tg.sendData(JSON.stringify(data));
-            tg.close();
+            listContainer.appendChild(card);
         });
-    </script>
+    }
+    
+    // Сохранение человека
+    function savePerson(data) {
+        // Не сохраняем если нет имени
+        if (!data.name) {
+            return;
+        }
+        
+        const saved = localStorage.getItem('savedPeople');
+        let people = saved ? JSON.parse(saved) : [];
+        
+        // Вычисляем возраст если есть дата рождения
+        if (data.birthdate) {
+            const birthDate = new Date(data.birthdate);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            data.age = age;
+        }
+        
+        // Проверяем есть ли уже такой человек по имени
+        const existingIndex = people.findIndex(p => p.name.toLowerCase() === data.name.toLowerCase());
+        if (existingIndex >= 0) {
+            // Обновляем существующего
+            people[existingIndex] = {...people[existingIndex], ...data};
+        } else {
+            // Добавляем нового
+            people.push(data);
+        }
+        
+        localStorage.setItem('savedPeople', JSON.stringify(people));
+        console.log('Сохранено:', data.name, people);
+    }
+    
+    // Инициализация при загрузке
+    loadFriendChips();
+    
+    // Обработка формы НОВОГО получателя
+    document.getElementById('giftForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        
+        let birthdate = '';
+        if (day && month && year) {
+            birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        
+        const data = {
+            name: document.getElementById('name').value,
+            gender: document.getElementById('gender').value,
+            birthdate: birthdate,
+            interests: document.getElementById('interests').value,
+            event: document.getElementById('event').value,
+            budget: document.getElementById('budgetInput').value
+        };
+        
+        // ВАЖНО: Сохраняем человека ПЕРЕД отправкой данных боту
+        if (data.name) {
+            savePerson(data);
+        }
+        
+        // Отправляем данные боту
+        tg.sendData(JSON.stringify(data));
+        tg.close();
+    });
+</script>
 </body>
 </html>
