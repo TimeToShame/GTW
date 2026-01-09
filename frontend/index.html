@@ -5,149 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Подбор подарков</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--tg-theme-hint-color, #ccc);
-            border-radius: 8px;
-            font-size: 16px;
-            background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        /* Стили для слайдера бюджета */
-        .budget-container {
-            margin-top: 10px;
-        }
-        
-        .budget-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--tg-theme-button-color, #0088cc);
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--tg-theme-hint-color, #ccc);
-            outline: none;
-            padding: 0;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--tg-theme-button-color, #0088cc);
-            cursor: pointer;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--tg-theme-button-color, #0088cc);
-            cursor: pointer;
-            border: none;
-        }
-        
-        /* Дата рождения - удобные селекты */
-        .date-selects {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .date-selects select {
-            flex: 1;
-        }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            background: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #fff);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        
-        button:active {
-            opacity: 0.8;
-        }
-        
-        .saved-people {
-            margin-bottom: 20px;
-        }
-        
-        .person-card {
-            padding: 12px;
-            border: 1px solid var(--tg-theme-hint-color, #ccc);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        .person-card:active {
-            opacity: 0.7;
-        }
-        
-        .person-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .person-info {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999);
-        }
-    </style>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        background: #1a1a1a;
+        color: #ffffff;
+        padding: 20px;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        font-size: 28px;
+        margin-bottom: 24px;
+        color: #ff8c00;
+        text-align: center;
+        font-weight: 700;
+    }
+    
+    h3 {
+        color: #ff8c00;
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #ffffff;
+        font-size: 15px;
+    }
+    
+    input, select, textarea {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #333;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #2a2a2a;
+        color: #ffffff;
+        transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #ff8c00;
+        background: #333;
+    }
+    
+    select option {
+        background: #2a2a2a;
+        color: #ffffff;
+    }
+    
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    /* Стили для слайдера бюджета */
+    .budget-container {
+        margin-top: 10px;
+        background: #2a2a2a;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #333;
+    }
+    
+    .budget-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #ff8c00;
+        margin-bottom: 15px;
+        text-align: center;
+        text-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+    }
+    
+    input[type="range"] {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right, #ff8c00 0%, #ff6600 100%);
+        outline: none;
+        padding: 0;
+        border: none;
+        box-shadow: 0 2px 10px rgba(255, 140, 0, 0.2);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #ff8c00;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #ff8c00;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    input[type="range"]::-moz-range-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
+    }
+    
+    /* Дата рождения - удобные селекты */
+    .date-selects {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .date-selects select {
+        flex: 1;
+    }
+    
+    button {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 24px;
+        box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 140, 0, 0.5);
+    }
+    
+    button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 15px rgba(255, 140, 0, 0.3);
+    }
+    
+    .saved-people {
+        margin-bottom: 24px;
+    }
+    
+    .person-card {
+        padding: 16px;
+        background: #2a2a2a;
+        border: 2px solid #333;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .person-card:hover {
+        border-color: #ff8c00;
+        background: #333;
+        transform: translateX(4px);
+    }
+    
+    .person-card:active {
+        transform: scale(0.98);
+    }
+    
+    .person-name {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #ff8c00;
+        font-size: 16px;
+    }
+    
+    .person-info {
+        font-size: 14px;
+        color: #999;
+    }
+    
+    /* Placeholder цвета */
+    ::placeholder {
+        color: #666;
+    }
+    
+    /* Скроллбар */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #1a1a1a;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #ff8c00;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #ff6600;
+    }
+</style>
 </head>
 <body>
     <div class="container">
