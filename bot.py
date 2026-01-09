@@ -1,6 +1,3 @@
-
-Copy
-
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
@@ -55,7 +52,6 @@ async def cmd_start(message: types.Message):
                 
                 # Отправляем уведомление пригласившему
                 try:
-                    inviter = db.get_user(inviter_id)
                     await bot.send_message(
                         chat_id=inviter_id,
                         text=f"🎉 {first_name} принял ваше приглашение!\n\n"
