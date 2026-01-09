@@ -434,6 +434,246 @@
         .profile-form.active {
             display: block;
         }
+        /* Действия на странице близких */
+.people-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.action-button {
+    flex: 1;
+    padding: 12px 16px;
+    background: #2a2a2a;
+    color: #ffffff;
+    border: 2px solid #333;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-button:hover {
+    border-color: #ff8c00;
+    background: #333;
+}
+
+.action-button.active {
+    background: #ff8c00;
+    border-color: #ff8c00;
+    color: #1a1a1a;
+}
+
+.action-button .icon {
+    font-size: 18px;
+}
+
+/* Режим удаления */
+.delete-confirm-bar {
+    background: #2a2a2a;
+    border: 2px solid #ff8c00;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete-confirm-bar span {
+    color: #ff8c00;
+    font-weight: 600;
+}
+
+.confirm-delete-button {
+    padding: 8px 24px;
+    background: #ff8c00;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-delete-button:hover {
+    background: #ff6600;
+}
+
+/* Карточки в режиме удаления */
+.person-card.delete-mode {
+    position: relative;
+    cursor: pointer;
+}
+
+.person-card.delete-mode::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #666;
+    border-radius: 50%;
+    background: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.person-card.delete-mode.selected::before {
+    background: #ff8c00;
+    border-color: #ff8c00;
+}
+
+.person-card.delete-mode.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 24px;
+    height: 24px;
+    color: #1a1a1a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.person-card.delete-mode .person-name,
+.person-card.delete-mode .person-info,
+.person-card.delete-mode .person-details {
+    margin-left: 36px;
+}
+
+.person-card.delete-mode.selected {
+    border-color: #ff8c00;
+    background: rgba(255, 140, 0, 0.1);
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content.small {
+    max-width: 320px;
+}
+
+.modal-content h2 {
+    color: #ff8c00;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 22px;
+}
+
+.modal-content h3 {
+    color: #ff8c00;
+    margin-bottom: 12px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.modal-content p {
+    text-align: center;
+    color: #999;
+    margin-bottom: 20px;
+}
+
+.char-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.modal-button.primary {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+    color: #ffffff;
+}
+
+.modal-button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+}
+
+.modal-button.secondary {
+    background: #2a2a2a;
+    color: #ffffff;
+    border: 2px solid #333;
+}
+
+.modal-button.secondary:hover {
+    border-color: #ff8c00;
+}
+
+.modal-button.danger {
+    background: #ff4444;
+    color: #ffffff;
+}
+
+.modal-button.danger:hover {
+    background: #ff2222;
+}
+
+.modal-button.share-button {
+    background: #2a2a2a;
+    color: #ff8c00;
+    border: 2px solid #ff8c00;
+}
+
+.modal-button.share-button:hover {
+    background: #333;
+}
     </style>
 </head>
 <body>
@@ -597,20 +837,71 @@
         </div>
         
         <!-- Страница близких -->
-        <div id="peoplePage" class="page">
-            <div class="header">
-                <button class="back-button" onclick="showPage('homePage')">←</button>
-                <h1>Близкие</h1>
-            </div>
-            
-            <div id="peopleList" class="people-list"></div>
-            
-            <div id="emptyPeople" class="empty-state">
-                <div class="icon">👥</div>
-                <h3>Нет сохранённых получателей</h3>
-                <p>Добавьте близких через "Подобрать подарок"</p>
-            </div>
+<div id="peoplePage" class="page">
+    <div class="header">
+        <button class="back-button" onclick="showPage('homePage')">←</button>
+        <h1>Близкие</h1>
+    </div>
+    
+    <div class="people-actions">
+        <button class="action-button add-button" onclick="showAddPersonModal()">
+            <span class="icon">➕</span>
+            Добавить близкого
+        </button>
+        <button class="action-button delete-button" onclick="toggleDeleteMode()">
+            <span class="icon">🗑️</span>
+            <span id="deleteButtonText">Удалить близкого</span>
+        </button>
+    </div>
+    
+    <div id="deleteConfirmBar" class="delete-confirm-bar" style="display: none;">
+        <span id="selectedCount">Выбрано: 0</span>
+        <button class="confirm-delete-button" onclick="confirmDelete()">OK</button>
+    </div>
+    
+    <div id="peopleList" class="people-list"></div>
+    
+    <div id="emptyPeople" class="empty-state">
+        <div class="icon">👥</div>
+        <h3>Нет близких</h3>
+        <p>Добавьте первого близкого человека</p>
+    </div>
+</div>
+
+<!-- Модальное окно добавления близкого -->
+<div id="addPersonModal" class="modal">
+    <div class="modal-content">
+        <h2>Добавить близкого</h2>
+        
+        <div class="form-group">
+            <label for="personName">Имя</label>
+            <input type="text" id="personName" maxlength="50" placeholder="Введите имя">
+            <div class="char-counter"><span id="charCount">0</span>/50</div>
         </div>
+        
+        <div class="modal-buttons">
+            <button class="modal-button share-button" onclick="shareInviteLink()">
+                <span class="icon">🔗</span>
+                Поделиться ссылкой
+            </button>
+            <button class="modal-button secondary" onclick="closeAddPersonModal()">Отменить</button>
+            <button class="modal-button primary" onclick="saveNewPerson()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="deleteConfirmModal" class="modal">
+    <div class="modal-content small">
+        <h3>Удалить из близких?</h3>
+        <p id="deleteConfirmText">Вы уверены, что хотите удалить выбранных людей?</p>
+        
+        <div class="modal-buttons">
+            <button class="modal-button secondary" onclick="closeDeleteConfirmModal()">Нет</button>
+            <button class="modal-button danger" onclick="executeDelete()">Да</button>
+        </div>
+    </div>
+</div>
         
         <!-- Страница виш-листа -->
         <div id="wishlistPage" class="page">
@@ -642,7 +933,207 @@
         document.getElementById(pageId).classList.add('active');
         
         if (pageId === 'peoplePage') {
-            loadPeopleList();
+            // Переменные для режима удаления
+let deleteMode = false;
+let selectedForDelete = new Set();
+
+// Список людей
+function loadPeopleList() {
+    const saved = localStorage.getItem('savedPeople');
+    const listContainer = document.getElementById('peopleList');
+    const emptyState = document.getElementById('emptyPeople');
+    
+    if (!saved || JSON.parse(saved).length === 0) {
+        listContainer.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    const people = JSON.parse(saved);
+    listContainer.innerHTML = '';
+    
+    people.forEach((person, index) => {
+        const card = document.createElement('div');
+        card.className = 'person-card';
+        card.dataset.index = index;
+        
+        const genderIcon = person.gender === 'male' ? '👨' : person.gender === 'female' ? '👩' : '👤';
+        const age = person.age ? `${person.age} лет` : 'Возраст не указан';
+        const interests = person.interests ? person.interests.substring(0, 50) + '...' : 'Интересы не указаны';
+        
+        card.innerHTML = `
+            <div class="person-name">${genderIcon} ${person.name || 'Без имени'}</div>
+            <div class="person-info">${age}</div>
+            <div class="person-details">${interests}</div>
+        `;
+        
+        if (deleteMode) {
+            card.classList.add('delete-mode');
+            card.onclick = () => toggleSelectForDelete(index);
+        } else {
+            card.onclick = () => {
+                showPage('giftPage');
+                setTimeout(() => {
+                    const chips = document.querySelectorAll('.friend-chip');
+                    if (chips[index + 1]) {
+                        chips[index + 1].click();
+                    }
+                }, 100);
+            };
+        }
+        
+        listContainer.appendChild(card);
+    });
+}
+
+// Показать модальное окно добавления
+function showAddPersonModal() {
+    document.getElementById('addPersonModal').classList.add('active');
+    document.getElementById('personName').value = '';
+    document.getElementById('charCount').textContent = '0';
+}
+
+// Закрыть модальное окно добавления
+function closeAddPersonModal() {
+    document.getElementById('addPersonModal').classList.remove('active');
+}
+
+// Счётчик символов
+document.getElementById('personName').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+});
+
+// Сохранить нового человека
+function saveNewPerson() {
+    const name = document.getElementById('personName').value.trim();
+    
+    if (!name) {
+        alert('Введите имя');
+        return;
+    }
+    
+    const saved = localStorage.getItem('savedPeople');
+    let people = saved ? JSON.parse(saved) : [];
+    
+    // Проверяем, нет ли уже такого имени
+    const existing = people.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+        alert('Человек с таким именем уже есть в списке');
+        return;
+    }
+    
+    // Добавляем нового человека с минимальными данными
+    people.push({
+        name: name,
+        gender: '',
+        birthdate: '',
+        interests: '',
+        age: null
+    });
+    
+    localStorage.setItem('savedPeople', JSON.stringify(people));
+    
+    closeAddPersonModal();
+    loadPeopleList();
+    loadFriendChips();
+}
+
+// Поделиться ссылкой-приглашением
+function shareInviteLink() {
+    const botUsername = 'whataagift_bot'; // TODO: Замените на username вашего бота
+    const userId = tg.initDataUnsafe?.user?.id || 'unknown';
+    const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
+    
+    // Используем Telegram Share
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent('Добавь меня в свои близкие в боте для подбора подарков!')}`;
+    
+    tg.openLink(shareUrl);
+}
+
+// Переключение режима удаления
+function toggleDeleteMode() {
+    deleteMode = !deleteMode;
+    selectedForDelete.clear();
+    
+    const deleteButton = document.querySelector('.delete-button');
+    const confirmBar = document.getElementById('deleteConfirmBar');
+    
+    if (deleteMode) {
+        deleteButton.classList.add('active');
+        document.getElementById('deleteButtonText').textContent = 'Отменить';
+        confirmBar.style.display = 'flex';
+    } else {
+        deleteButton.classList.remove('active');
+        document.getElementById('deleteButtonText').textContent = 'Удалить близкого';
+        confirmBar.style.display = 'none';
+    }
+    
+    updateSelectedCount();
+    loadPeopleList();
+}
+
+// Выбор карточки для удаления
+function toggleSelectForDelete(index) {
+    if (!deleteMode) return;
+    
+    const card = document.querySelector(`[data-index="${index}"]`);
+    
+    if (selectedForDelete.has(index)) {
+        selectedForDelete.delete(index);
+        card.classList.remove('selected');
+    } else {
+        selectedForDelete.add(index);
+        card.classList.add('selected');
+    }
+    
+    updateSelectedCount();
+}
+
+// Обновить счётчик выбранных
+function updateSelectedCount() {
+    document.getElementById('selectedCount').textContent = `Выбрано: ${selectedForDelete.size}`;
+}
+
+// Подтверждение удаления
+function confirmDelete() {
+    if (selectedForDelete.size === 0) {
+        alert('Выберите хотя бы одного человека');
+        return;
+    }
+    
+    const count = selectedForDelete.size;
+    const text = count === 1 
+        ? 'Вы уверены, что хотите удалить этого человека из близких?' 
+        : `Вы уверены, что хотите удалить ${count} людей из близких?`;
+    
+    document.getElementById('deleteConfirmText').textContent = text;
+    document.getElementById('deleteConfirmModal').classList.add('active');
+}
+
+// Закрыть модальное окно подтверждения
+function closeDeleteConfirmModal() {
+    document.getElementById('deleteConfirmModal').classList.remove('active');
+}
+
+// Выполнить удаление
+function executeDelete() {
+    const saved = localStorage.getItem('savedPeople');
+    let people = saved ? JSON.parse(saved) : [];
+    
+    // Удаляем выбранных (в обратном порядке, чтобы индексы не сбивались)
+    const indicesToDelete = Array.from(selectedForDelete).sort((a, b) => b - a);
+    indicesToDelete.forEach(index => {
+        people.splice(index, 1);
+    });
+    
+    localStorage.setItem('savedPeople', JSON.stringify(people));
+    
+    closeDeleteConfirmModal();
+    toggleDeleteMode(); // Выходим из режима удаления
+    loadPeopleList();
+    loadFriendChips();
+}
         } else if (pageId === 'giftPage') {
             loadFriendChips();
         }
