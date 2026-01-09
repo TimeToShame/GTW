@@ -1,24 +1,38 @@
+
+Copy
+
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from dotenv import load_dotenv
 import os
+from database import db
 
 # Загружаем токен из .env файла
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-# Настройка логирования (чтобы видеть что происходит)
+# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
 # Создаём бота и диспетчер
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
+# URL Mini App
+MINI_APP_URL = "https://timetoshame.github.io/GTW/frontend/index.html?v=10"
+
 # Обработчик команды /start
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    user_id = str(message.from_user.id)
+    username = message.from_user.username
+    first_name = message.from_user.first_name
+    
+    # Регистрируем пользователя в БД
+    db.add_user(user_id, username, first_name)
+    
     # Проверяем есть ли параметр приглашения
     if message.text and len(message.text.split()) > 1:
         param = message.text.split()[1]
@@ -26,49 +40,82 @@ async def cmd_start(message: types.Message):
         # Если это инвайт-ссылка
         if param.startswith('invite_'):
             inviter_id = param.replace('invite_', '')
-            invited_user_id = str(message.from_user.id)
-            invited_username = message.from_user.username or message.from_user.first_name
             
-            # Отправляем уведомление пригласившему
-            try:
-                await message.bot.send_message(
-                    chat_id=inviter_id,
-                    text=f"🎉 {invited_username} присоединился к вашим близким!\n\n"
-                         f"Теперь вы можете добавить его в список близких."
+            # Проверяем что пользователь не приглашает сам себя
+            if inviter_id != user_id:
+                # Записываем приглашение
+                db.add_invitation(inviter_id, user_id)
+                
+                # Добавляем приглашённого в близкие пригласившего
+                db.add_close_person(
+                    owner_id=inviter_id,
+                    name=first_name,
+                    person_id=user_id
                 )
-            except:
-                pass  # Пользователь мог заблокировать бота
-            
-            # Сообщение приглашённому
-            await message.answer(
-                f"👋 Добро пожаловать!\n\n"
-                f"Вы были приглашены пользователем. Теперь можете использовать бот для подбора подарков!",
-                reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
-                    [types.InlineKeyboardButton(
-                        text="🎁 Подобрать подарок",
-                        web_app=types.WebAppInfo(url="https://timetoshame.github.io/GTW/frontend/index.html?v=9")
-                    )]
-                ])
-            )
-            return
+                
+                # Отправляем уведомление пригласившему
+                try:
+                    inviter = db.get_user(inviter_id)
+                    await bot.send_message(
+                        chat_id=inviter_id,
+                        text=f"🎉 {first_name} принял ваше приглашение!\n\n"
+                             f"Он автоматически добавлен в ваш список близких."
+                    )
+                except Exception as e:
+                    logging.error(f"Не удалось отправить уведомление: {e}")
+                
+                # Сообщение приглашённому
+                await message.answer(
+                    f"👋 Добро пожаловать, {first_name}!\n\n"
+                    f"Вы приняли приглашение и теперь в списке близких вашего друга.\n"
+                    f"Используйте бот для подбора подарков!",
+                    reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
+                        [types.InlineKeyboardButton(
+                            text="🎁 Подобрать подарок",
+                            web_app=types.WebAppInfo(url=MINI_APP_URL)
+                        )]
+                    ])
+                )
+                return
     
     # Обычное приветствие
     await message.answer(
-        "👋 Привет! Я помогу тебе подобрать идеальный подарок.\n\n"
+        f"👋 Привет, {first_name}! Я помогу тебе подобрать идеальный подарок.\n\n"
         "Нажми на кнопку ниже, чтобы начать:",
         reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
             [types.InlineKeyboardButton(
                 text="🎁 Подобрать подарок",
-                web_app=types.WebAppInfo(url="https://timetoshame.github.io/GTW/frontend/index.html?v=10")
+                web_app=types.WebAppInfo(url=MINI_APP_URL)
             )]
         ])
     )
 
-# Обработчик нажатия на кнопку
-@dp.callback_query(lambda c: c.data == "select_gift")
-async def process_select_gift(callback: types.CallbackQuery):
-    await callback.message.answer("Скоро здесь откроется Mini App! 🚀")
-    await callback.answer()
+# Обработчик данных из Mini App
+@dp.message(lambda message: message.web_app_data)
+async def handle_web_app_data(message: types.Message):
+    import json
+    
+    try:
+        data = json.loads(message.web_app_data.data)
+        
+        # Здесь обрабатываем данные из Mini App
+        name = data.get('name', 'Без имени')
+        event = data.get('event', 'Не указано')
+        budget = data.get('budget', '0')
+        
+        await message.answer(
+            f"✅ Данные получены!\n\n"
+            f"👤 Получатель: {name}\n"
+            f"🎉 Событие: {event}\n"
+            f"💰 Бюджет: {budget} ₽\n\n"
+            f"🔄 Подбираю подарки..."
+        )
+        
+        # TODO: Здесь будет логика подбора подарков с помощью AI
+        
+    except Exception as e:
+        logging.error(f"Ошибка обработки данных: {e}")
+        await message.answer("❌ Произошла ошибка при обработке данных")
 
 # Запуск бота
 async def main():
@@ -76,4 +123,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    

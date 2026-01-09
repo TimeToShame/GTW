@@ -426,7 +426,6 @@
             display: block;
         }
         
-        /* Действия на странице близких */
         .people-actions {
             display: flex;
             gap: 12px;
@@ -663,6 +662,23 @@
         .modal-button.share-button:hover {
             background: #333;
         }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #ff8c00;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
     </style>
 </head>
 <body>
@@ -703,9 +719,7 @@
             <div class="friend-selector">
                 <label>Выберите получателя</label>
                 <div id="friendChips" class="friend-chips">
-                    <div class="friend-chip add-new selected" onclick="selectFriend(null, -1)">
-                        + Новый получатель
-                    </div>
+                    <div class="loading">Загрузка</div>
                 </div>
             </div>
             
@@ -847,7 +861,7 @@
             
             <div id="peopleList" class="people-list"></div>
             
-            <div id="emptyPeople" class="empty-state">
+            <div id="emptyPeople" class="empty-state" style="display: none;">
                 <div class="icon">👥</div>
                 <h3>Нет близких</h3>
                 <p>Добавьте первого близкого человека</p>
@@ -908,22 +922,89 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         
+        // ВАЖНО: Измените этот URL когда деплоите на Render
+        const API_URL = 'http://localhost:8000';  // Для локальной разработки
+        // const API_URL = 'https://your-app.onrender.com';  // Для продакшена
+        
         let currentFriend = null;
         let selectedPersonIndex = null;
         let deleteMode = false;
         let selectedForDelete = new Set();
+        let closePeople = [];
+        
+        // Получаем initData для авторизации
+        const initData = tg.initData || '';
+        
+        // === API ФУНКЦИИ ===
+        
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': initData,
+                        ...options.headers
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert('Ошибка подключения к серверу. Убедитесь что API запущен.');
+                throw error;
+            }
+        }
+        
+        async function loadClosePeopleFromAPI() {
+            try {
+                const data = await apiRequest('/api/close-people');
+                closePeople = data.people || [];
+                return closePeople;
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        async function addClosePersonToAPI(person) {
+            try {
+                const result = await apiRequest('/api/close-people', {
+                    method: 'POST',
+                    body: JSON.stringify(person)
+                });
+                return result.person_db_id;
+            } catch (error) {
+                return null;
+            }
+        }
+        
+        async function deleteClosePeopleFromAPI(ids) {
+            try {
+                await apiRequest('/api/close-people', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ person_db_ids: ids })
+                });
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
         
         // Навигация между страницами
-        function showPage(pageId) {
+        async function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             document.getElementById(pageId).classList.add('active');
             
             if (pageId === 'peoplePage') {
-                loadPeopleList();
+                await loadPeopleList();
             } else if (pageId === 'giftPage') {
-                loadFriendChips();
+                await loadFriendChips();
             }
         }
         
@@ -957,7 +1038,7 @@
             yearSelect.appendChild(option);
         }
         
-        // Синхронизация бюджета (новый получатель)
+        // Синхронизация бюджета
         const budgetSlider = document.getElementById('budgetSlider');
         const budgetInput = document.getElementById('budgetInput');
         
@@ -972,7 +1053,6 @@
             }
         });
         
-        // Синхронизация бюджета (существующий)
         const budgetSliderExisting = document.getElementById('budgetSliderExisting');
         const budgetInputExisting = document.getElementById('budgetInputExisting');
         
@@ -988,22 +1068,21 @@
         });
         
         // Загрузка чипсов друзей
-        function loadFriendChips() {
-            const saved = localStorage.getItem('savedPeople');
+        async function loadFriendChips() {
             const container = document.getElementById('friendChips');
+            container.innerHTML = '<div class="loading">Загрузка</div>';
+            
+            await loadClosePeopleFromAPI();
             
             container.innerHTML = '<div class="friend-chip add-new" onclick="selectFriend(null, -1)">+ Новый получатель</div>';
             
-            if (saved) {
-                const people = JSON.parse(saved);
-                people.forEach((person, index) => {
-                    const chip = document.createElement('div');
-                    chip.className = 'friend-chip';
-                    chip.textContent = person.name;
-                    chip.onclick = () => selectFriend(person, index);
-                    container.appendChild(chip);
-                });
-            }
+            closePeople.forEach((person, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'friend-chip';
+                chip.textContent = person.name;
+                chip.onclick = () => selectFriend(person, index);
+                container.appendChild(chip);
+            });
             
             if (selectedPersonIndex === null) {
                 selectFriend(null, -1);
@@ -1011,7 +1090,6 @@
             }
         }
         
-        // Выбор друга
         function selectFriend(person, index) {
             currentFriend = person;
             selectedPersonIndex = index;
@@ -1032,7 +1110,6 @@
             }
         }
         
-        // Очистка формы нового получателя
         function clearNewPersonForm() {
             document.getElementById('name').value = '';
             document.getElementById('gender').value = '';
@@ -1045,7 +1122,6 @@
             document.getElementById('budgetSlider').value = 5000;
         }
         
-        // Загрузка данных существующего человека
         function loadExistingPerson(person) {
             document.getElementById('eventExisting').value = person.event || '';
             const budget = person.budget || 5000;
@@ -1055,7 +1131,6 @@
             }
         }
         
-        // Отправка для существующего человека
         function submitExistingPerson() {
             const data = {
                 ...currentFriend,
@@ -1068,25 +1143,28 @@
         }
         
         // Список людей
-        function loadPeopleList() {
-            const saved = localStorage.getItem('savedPeople');
+        async function loadPeopleList() {
             const listContainer = document.getElementById('peopleList');
             const emptyState = document.getElementById('emptyPeople');
             
-            if (!saved || JSON.parse(saved).length === 0) {
+            listContainer.innerHTML = '<div class="loading">Загрузка</div>';
+            
+            await loadClosePeopleFromAPI();
+            
+            if (closePeople.length === 0) {
                 listContainer.innerHTML = '';
                 emptyState.style.display = 'block';
                 return;
             }
             
             emptyState.style.display = 'none';
-            const people = JSON.parse(saved);
             listContainer.innerHTML = '';
             
-            people.forEach((person, index) => {
+            closePeople.forEach((person, index) => {
                 const card = document.createElement('div');
                 card.className = 'person-card';
                 card.dataset.index = index;
+                card.dataset.dbId = person.id;
                 
                 const genderIcon = person.gender === 'male' ? '👨' : person.gender === 'female' ? '👩' : '👤';
                 const age = person.age ? `${person.age} лет` : 'Возраст не указан';
@@ -1100,7 +1178,7 @@
                 
                 if (deleteMode) {
                     card.classList.add('delete-mode');
-                    card.onclick = () => toggleSelectForDelete(index);
+                    card.onclick = () => toggleSelectForDelete(index, person.id);
                 } else {
                     card.onclick = () => {
                         showPage('giftPage');
@@ -1117,73 +1195,60 @@
             });
         }
         
-        // Показать модальное окно добавления
         function showAddPersonModal() {
             document.getElementById('addPersonModal').classList.add('active');
             document.getElementById('personName').value = '';
             document.getElementById('charCount').textContent = '0';
         }
         
-        // Закрыть модальное окно добавления
         function closeAddPersonModal() {
             document.getElementById('addPersonModal').classList.remove('active');
         }
         
-        // Счётчик символов
         document.getElementById('personName').addEventListener('input', function() {
             document.getElementById('charCount').textContent = this.value.length;
         });
         
-        // Сохранить нового человека
-function saveNewPerson() {
-    const name = document.getElementById('personName').value.trim();
-    
-    if (!name) {
-        alert('Введите имя');
-        return;
-    }
-    
-    const saved = localStorage.getItem('savedPeople');
-    let people = saved ? JSON.parse(saved) : [];
-    
-    // Просто добавляем нового человека без проверки на дубли
-    people.push({
-        name: name,
-        gender: '',
-        birthdate: '',
-        interests: '',
-        age: null
-    });
-    
-    localStorage.setItem('savedPeople', JSON.stringify(people));
-    
-    closeAddPersonModal();
-    loadPeopleList();
-    loadFriendChips();
-}
+        async function saveNewPerson() {
+            const name = document.getElementById('personName').value.trim();
+            
+            if (!name) {
+                alert('Введите имя');
+                return;
+            }
+            
+            const person = {
+                name: name,
+                gender: '',
+                birthdate: '',
+                interests: '',
+                age: null
+            };
+            
+            const dbId = await addClosePersonToAPI(person);
+            
+            if (dbId) {
+                closeAddPersonModal();
+                await loadPeopleList();
+                await loadFriendChips();
+            } else {
+                alert('Ошибка при сохранении');
+            }
+        }
         
-       // Поделиться ссылкой-приглашением
-function shareInviteLink() {
-    const botUsername = 'whataagift_bot'; // Ваш username бота
-    const userId = tg.initDataUnsafe?.user?.id || 'unknown';
-    const userName = tg.initDataUnsafe?.user?.first_name || 'Друг';
-    
-    const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
-    
-    const shareText = `${userName} приглашает тебя в бот для подбора подарков! 🎁\n\nПрисоединяйся:`;
-    
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(shareText)}`;
-    
-    tg.openLink(shareUrl);
-    
-    // Закрываем модальное окно после отправки
-    closeAddPersonModal();
-    
-    // Показываем подсказку
-    alert('Когда ваш друг перейдет по ссылке, он автоматически появится в списке близких!');
-}
+        function shareInviteLink() {
+            const botUsername = 'whataagift_bot';
+            const userId = tg.initDataUnsafe?.user?.id || 'unknown';
+            const userName = tg.initDataUnsafe?.user?.first_name || 'Друг';
+            
+            const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
+            const shareText = `${userName} приглашает тебя в бот для подбора подарков! 🎁\n\nПрисоединяйся:`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(shareText)}`;
+            
+            tg.openLink(shareUrl);
+            closeAddPersonModal();
+        }
         
-        // Переключение режима удаления
         function toggleDeleteMode() {
             deleteMode = !deleteMode;
             selectedForDelete.clear();
@@ -1205,29 +1270,26 @@ function shareInviteLink() {
             loadPeopleList();
         }
         
-        // Выбор карточки для удаления
-        function toggleSelectForDelete(index) {
+        function toggleSelectForDelete(index, dbId) {
             if (!deleteMode) return;
             
             const card = document.querySelector(`[data-index="${index}"]`);
             
-            if (selectedForDelete.has(index)) {
-                selectedForDelete.delete(index);
+            if (selectedForDelete.has(dbId)) {
+                selectedForDelete.delete(dbId);
                 card.classList.remove('selected');
             } else {
-                selectedForDelete.add(index);
+                selectedForDelete.add(dbId);
                 card.classList.add('selected');
             }
             
             updateSelectedCount();
         }
         
-        // Обновить счётчик выбранных
         function updateSelectedCount() {
             document.getElementById('selectedCount').textContent = `Выбрано: ${selectedForDelete.size}`;
         }
         
-        // Подтверждение удаления
         function confirmDelete() {
             if (selectedForDelete.size === 0) {
                 alert('Выберите хотя бы одного человека');
@@ -1243,37 +1305,29 @@ function shareInviteLink() {
             document.getElementById('deleteConfirmModal').classList.add('active');
         }
         
-        // Закрыть модальное окно подтверждения
         function closeDeleteConfirmModal() {
             document.getElementById('deleteConfirmModal').classList.remove('active');
         }
         
-        // Выполнить удаление
-        function executeDelete() {
-            const saved = localStorage.getItem('savedPeople');
-            let people = saved ? JSON.parse(saved) : [];
+        async function executeDelete() {
+            const ids = Array.from(selectedForDelete);
             
-            const indicesToDelete = Array.from(selectedForDelete).sort((a, b) => b - a);
-            indicesToDelete.forEach(index => {
-                people.splice(index, 1);
-            });
+            const success = await deleteClosePeopleFromAPI(ids);
             
-            localStorage.setItem('savedPeople', JSON.stringify(people));
-            
-            closeDeleteConfirmModal();
-            toggleDeleteMode();
-            loadPeopleList();
-            loadFriendChips();
+            if (success) {
+                closeDeleteConfirmModal();
+                toggleDeleteMode();
+                await loadPeopleList();
+                await loadFriendChips();
+            } else {
+                alert('Ошибка при удалении');
+            }
         }
         
-        // Сохранение человека
         function savePerson(data) {
             if (!data.name) {
                 return;
             }
-            
-            const saved = localStorage.getItem('savedPeople');
-            let people = saved ? JSON.parse(saved) : [];
             
             if (data.birthdate) {
                 const birthDate = new Date(data.birthdate);
@@ -1286,21 +1340,14 @@ function shareInviteLink() {
                 data.age = age;
             }
             
-            const existingIndex = people.findIndex(p => p.name.toLowerCase() === data.name.toLowerCase());
-            if (existingIndex >= 0) {
-                people[existingIndex] = {...people[existingIndex], ...data};
-            } else {
-                people.push(data);
-            }
-            
-            localStorage.setItem('savedPeople', JSON.stringify(people));
+            return addClosePersonToAPI(data);
         }
         
-        // Инициализация при загрузке
+        // Инициализация
         loadFriendChips();
         
-        // Обработка формы НОВОГО получателя
-        document.getElementById('giftForm').addEventListener('submit', function(e) {
+        // Обработка формы
+        document.getElementById('giftForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const day = document.getElementById('day').value;
@@ -1322,7 +1369,7 @@ function shareInviteLink() {
             };
             
             if (data.name) {
-                savePerson(data);
+                await savePerson(data);
             }
             
             tg.sendData(JSON.stringify(data));

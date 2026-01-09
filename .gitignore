@@ -1,4 +1,44 @@
+# Секретные данные
 .env
+
+# База данных (не загружаем на GitHub)
+*.db
+gift_bot.db
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Логи
+*.log
