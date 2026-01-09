@@ -1135,37 +1135,32 @@
         });
         
         // Сохранить нового человека
-        function saveNewPerson() {
-            const name = document.getElementById('personName').value.trim();
-            
-            if (!name) {
-                alert('Введите имя');
-                return;
-            }
-            
-            const saved = localStorage.getItem('savedPeople');
-            let people = saved ? JSON.parse(saved) : [];
-            
-            const existing = people.find(p => p.name.toLowerCase() === name.toLowerCase());
-            if (existing) {
-                alert('Человек с таким именем уже есть в списке');
-                return;
-            }
-            
-            people.push({
-                name: name,
-                gender: '',
-                birthdate: '',
-                interests: '',
-                age: null
-            });
-            
-            localStorage.setItem('savedPeople', JSON.stringify(people));
-            
-            closeAddPersonModal();
-            loadPeopleList();
-            loadFriendChips();
-        }
+function saveNewPerson() {
+    const name = document.getElementById('personName').value.trim();
+    
+    if (!name) {
+        alert('Введите имя');
+        return;
+    }
+    
+    const saved = localStorage.getItem('savedPeople');
+    let people = saved ? JSON.parse(saved) : [];
+    
+    // Просто добавляем нового человека без проверки на дубли
+    people.push({
+        name: name,
+        gender: '',
+        birthdate: '',
+        interests: '',
+        age: null
+    });
+    
+    localStorage.setItem('savedPeople', JSON.stringify(people));
+    
+    closeAddPersonModal();
+    loadPeopleList();
+    loadFriendChips();
+}
         
         // Поделиться ссылкой-приглашением
         function shareInviteLink() {
