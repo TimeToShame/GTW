@@ -16,21 +16,52 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background: #1a1a1a;
             color: #ffffff;
-            padding: 20px;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
         .container {
             max-width: 500px;
             margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Навигация */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: #ff8c00;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+            width: auto;
+        }
+        
+        .back-button:active {
+            opacity: 0.6;
         }
         
         h1 {
-            font-size: 28px;
-            margin-bottom: 24px;
+            font-size: 24px;
             color: #ff8c00;
-            text-align: center;
             font-weight: 700;
+            flex: 1;
+        }
+        
+        h2 {
+            font-size: 22px;
+            color: #ff8c00;
+            margin-bottom: 20px;
+            text-align: center;
         }
         
         h3 {
@@ -39,6 +70,64 @@
             margin-bottom: 12px;
         }
         
+        /* Скрытие страниц */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Главная страница - кнопки меню */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 40px;
+        }
+        
+        .menu-button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            border: 2px solid #333;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+        
+        .menu-button:hover {
+            border-color: #ff8c00;
+            background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
+            transform: translateX(4px);
+        }
+        
+        .menu-button:active {
+            transform: scale(0.98);
+        }
+        
+        .menu-button .icon {
+            font-size: 28px;
+        }
+        
+        .menu-button .text {
+            flex: 1;
+        }
+        
+        .menu-button .arrow {
+            color: #ff8c00;
+            font-size: 20px;
+        }
+        
+        /* Формы */
         .form-group {
             margin-bottom: 20px;
         }
@@ -77,6 +166,44 @@
             min-height: 100px;
             resize: vertical;
             font-family: inherit;
+        }
+        
+        /* Выбор друга */
+        .friend-selector {
+            margin-bottom: 20px;
+        }
+        
+        .friend-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .friend-chip {
+            padding: 10px 16px;
+            background: #2a2a2a;
+            border: 2px solid #333;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .friend-chip:hover {
+            border-color: #ff8c00;
+        }
+        
+        .friend-chip.selected {
+            background: #ff8c00;
+            border-color: #ff8c00;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        .friend-chip.add-new {
+            border-style: dashed;
+            color: #ff8c00;
         }
         
         /* Стили для бюджета */
@@ -167,7 +294,6 @@
             box-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
         }
         
-        /* Убираем стрелки у number input */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -178,7 +304,6 @@
             -moz-appearance: textfield;
         }
         
-        /* Дата рождения - удобные селекты */
         .date-selects {
             display: flex;
             gap: 10px;
@@ -188,7 +313,7 @@
             flex: 1;
         }
         
-        button {
+        button.primary-button {
             width: 100%;
             padding: 16px;
             background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
@@ -205,18 +330,21 @@
             letter-spacing: 1px;
         }
         
-        button:hover {
+        button.primary-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(255, 140, 0, 0.5);
         }
         
-        button:active {
+        button.primary-button:active {
             transform: translateY(0);
             box-shadow: 0 2px 15px rgba(255, 140, 0, 0.3);
         }
         
-        .saved-people {
-            margin-bottom: 24px;
+        /* Карточки людей */
+        .people-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         
         .person-card {
@@ -224,7 +352,6 @@
             background: #2a2a2a;
             border: 2px solid #333;
             border-radius: 12px;
-            margin-bottom: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -243,20 +370,45 @@
             font-weight: 600;
             margin-bottom: 6px;
             color: #ff8c00;
-            font-size: 16px;
+            font-size: 18px;
         }
         
         .person-info {
             font-size: 14px;
             color: #999;
+            margin-bottom: 4px;
         }
         
-        /* Placeholder цвета */
+        .person-details {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state h3 {
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+        }
+        
         ::placeholder {
             color: #666;
         }
         
-        /* Скроллбар */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -273,91 +425,227 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ff6600;
         }
+        
+        /* Скрытие форм профиля */
+        .profile-form {
+            display: none;
+        }
+        
+        .profile-form.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎁 Подбор подарка</h1>
+        <!-- Главная страница -->
+        <div id="homePage" class="page active">
+            <h1 style="text-align: center; font-size: 32px; margin-bottom: 8px;">🎁 WTG</h1>
+            <p style="text-align: center; color: #999; margin-bottom: 40px;">What To Gift</p>
+            
+            <div class="menu-buttons">
+                <button class="menu-button" onclick="showPage('giftPage')">
+                    <span class="icon">🎁</span>
+                    <span class="text">Подобрать подарок</span>
+                    <span class="arrow">→</span>
+                </button>
+                
+                <button class="menu-button" onclick="showPage('peoplePage')">
+                    <span class="icon">👥</span>
+                    <span class="text">Близкие</span>
+                    <span class="arrow">→</span>
+                </button>
+                
+                <button class="menu-button" onclick="showPage('wishlistPage')">
+                    <span class="icon">⭐</span>
+                    <span class="text">Мой виш-лист</span>
+                    <span class="arrow">→</span>
+                </button>
+            </div>
+        </div>
         
-        <!-- Сохранённые люди -->
-        <div id="savedPeople" class="saved-people"></div>
-        
-        <form id="giftForm">
-            <div class="form-group">
-                <label for="name">Имя получателя</label>
-                <input type="text" id="name" placeholder="Введите имя">
+        <!-- Страница подбора подарка -->
+        <div id="giftPage" class="page">
+            <div class="header">
+                <button class="back-button" onclick="showPage('homePage')">←</button>
+                <h1>Подобрать подарок</h1>
             </div>
             
-            <div class="form-group">
-                <label for="gender">Пол</label>
-                <select id="gender">
-                    <option value="">Выберите...</option>
-                    <option value="male">Мужской</option>
-                    <option value="female">Женский</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Дата рождения</label>
-                <div class="date-selects">
-                    <select id="day">
-                        <option value="">День</option>
-                    </select>
-                    <select id="month">
-                        <option value="">Месяц</option>
-                    </select>
-                    <select id="year">
-                        <option value="">Год</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="interests">Интересы</label>
-                <textarea id="interests" placeholder="Опишите интересы человека..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="event">Событие</label>
-                <select id="event">
-                    <option value="">Выберите...</option>
-                    <option value="birthday">День рождения</option>
-                    <option value="new_year">Новый год</option>
-                    <option value="8march">8 Марта</option>
-                    <option value="23february">23 Февраля</option>
-                    <option value="anniversary">Годовщина отношений</option>
-                    <option value="wedding">Свадьба</option>
-                    <option value="valentines">День Святого Валентина</option>
-                    <option value="christmas">Рождество</option>
-                    <option value="housewarming">Новоселье</option>
-                    <option value="just_because">Просто так</option>
-                    <option value="apology">Извинение</option>
-                    <option value="other">Другое</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="budget">Бюджет</label>
-                <div class="budget-container">
-                    <div class="budget-input-wrapper">
-                        <input type="number" id="budgetInput" min="0" step="500" value="5000" placeholder="Введите сумму">
-                        <span class="currency">₽</span>
-                    </div>
-                    <input type="range" id="budgetSlider" min="500" max="100000" step="500" value="5000">
-                    <div class="budget-labels">
-                        <span>500 ₽</span>
-                        <span>100 000 ₽</span>
+            <!-- Выбор друга -->
+            <div class="friend-selector">
+                <label>Выберите получателя</label>
+                <div id="friendChips" class="friend-chips">
+                    <div class="friend-chip add-new selected" onclick="selectFriend(null)">
+                        + Новый получатель
                     </div>
                 </div>
             </div>
             
-            <button type="submit">Подобрать подарок</button>
-        </form>
+            <!-- Форма нового получателя -->
+            <div id="newPersonForm" class="profile-form active">
+                <form id="giftForm">
+                    <div class="form-group">
+                        <label for="name">Имя получателя</label>
+                        <input type="text" id="name" placeholder="Введите имя">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gender">Пол</label>
+                        <select id="gender">
+                            <option value="">Выберите...</option>
+                            <option value="male">Мужской</option>
+                            <option value="female">Женский</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Дата рождения</label>
+                        <div class="date-selects">
+                            <select id="day">
+                                <option value="">День</option>
+                            </select>
+                            <select id="month">
+                                <option value="">Месяц</option>
+                            </select>
+                            <select id="year">
+                                <option value="">Год</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interests">Интересы</label>
+                        <textarea id="interests" placeholder="Опишите интересы человека..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="event">Событие</label>
+                        <select id="event">
+                            <option value="">Выберите...</option>
+                            <option value="birthday">День рождения</option>
+                            <option value="new_year">Новый год</option>
+                            <option value="8march">8 Марта</option>
+                            <option value="23february">23 Февраля</option>
+                            <option value="anniversary">Годовщина отношений</option>
+                            <option value="wedding">Свадьба</option>
+                            <option value="valentines">День Святого Валентина</option>
+                            <option value="christmas">Рождество</option>
+                            <option value="housewarming">Новоселье</option>
+                            <option value="just_because">Просто так</option>
+                            <option value="apology">Извинение</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="budget">Бюджет</label>
+                        <div class="budget-container">
+                            <div class="budget-input-wrapper">
+                                <input type="number" id="budgetInput" min="0" step="500" value="5000" placeholder="Введите сумму">
+                                <span class="currency">₽</span>
+                            </div>
+                            <input type="range" id="budgetSlider" min="500" max="100000" step="500" value="5000">
+                            <div class="budget-labels">
+                                <span>500 ₽</span>
+                                <span>100 000 ₽</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="primary-button">Подобрать подарок</button>
+                </form>
+            </div>
+            
+            <!-- Форма для существующего друга -->
+            <div id="existingPersonForm" class="profile-form">
+                <div class="form-group">
+                    <label for="eventExisting">Событие</label>
+                    <select id="eventExisting">
+                        <option value="">Выберите...</option>
+                        <option value="birthday">День рождения</option>
+                        <option value="new_year">Новый год</option>
+                        <option value="8march">8 Марта</option>
+                        <option value="23february">23 Февраля</option>
+                        <option value="anniversary">Годовщина отношений</option>
+                        <option value="wedding">Свадьба</option>
+                        <option value="valentines">День Святого Валентина</option>
+                        <option value="christmas">Рождество</option>
+                        <option value="housewarming">Новоселье</option>
+                        <option value="just_because">Просто так</option>
+                        <option value="apology">Извинение</option>
+                        <option value="other">Другое</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budgetExisting">Бюджет</label>
+                    <div class="budget-container">
+                        <div class="budget-input-wrapper">
+                            <input type="number" id="budgetInputExisting" min="0" step="500" value="5000">
+                            <span class="currency">₽</span>
+                        </div>
+                        <input type="range" id="budgetSliderExisting" min="500" max="100000" step="500" value="5000">
+                        <div class="budget-labels">
+                            <span>500 ₽</span>
+                            <span>100 000 ₽</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="primary-button" onclick="submitExistingPerson()">Подобрать подарок</button>
+            </div>
+        </div>
+        
+        <!-- Страница близких -->
+        <div id="peoplePage" class="page">
+            <div class="header">
+                <button class="back-button" onclick="showPage('homePage')">←</button>
+                <h1>Близкие</h1>
+            </div>
+            
+            <div id="peopleList" class="people-list"></div>
+            
+            <div id="emptyPeople" class="empty-state">
+                <div class="icon">👥</div>
+                <h3>Нет сохранённых получателей</h3>
+                <p>Добавьте близких через "Подобрать подарок"</p>
+            </div>
+        </div>
+        
+        <!-- Страница виш-листа -->
+        <div id="wishlistPage" class="page">
+            <div class="header">
+                <button class="back-button" onclick="showPage('homePage')">←</button>
+                <h1>Мой виш-лист</h1>
+            </div>
+            
+            <div class="empty-state">
+                <div class="icon">⭐</div>
+                <h3>Скоро здесь появится ваш виш-лист</h3>
+                <p>Функция в разработке</p>
+            </div>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        
+        let currentFriend = null;
+        
+        // Навигация между страницами
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'peoplePage') {
+                loadPeopleList();
+            } else if (pageId === 'giftPage') {
+                loadFriendChips();
+            }
+        }
         
         // Генерация дней
         const daySelect = document.getElementById('day');
@@ -379,7 +667,7 @@
             monthSelect.appendChild(option);
         });
         
-        // Генерация годов (последние 100 лет)
+        // Генерация годов
         const yearSelect = document.getElementById('year');
         const currentYear = new Date().getFullYear();
         for (let i = currentYear; i >= currentYear - 100; i--) {
@@ -389,65 +677,154 @@
             yearSelect.appendChild(option);
         }
         
-        // Синхронизация ползунка и поля ввода бюджета
+        // Синхронизация бюджета (новый получатель)
         const budgetSlider = document.getElementById('budgetSlider');
         const budgetInput = document.getElementById('budgetInput');
         
-        // При изменении ползунка
         budgetSlider.addEventListener('input', function() {
             budgetInput.value = this.value;
         });
         
-        // При изменении поля ввода
         budgetInput.addEventListener('input', function() {
             let value = parseInt(this.value) || 0;
-            
-            // Ограничиваем ползунок только если значение в его диапазоне
             if (value >= 500 && value <= 100000) {
                 budgetSlider.value = value;
             }
         });
         
-        // Загрузка сохранённых людей
-        function loadSavedPeople() {
+        // Синхронизация бюджета (существующий)
+        const budgetSliderExisting = document.getElementById('budgetSliderExisting');
+        const budgetInputExisting = document.getElementById('budgetInputExisting');
+        
+        budgetSliderExisting.addEventListener('input', function() {
+            budgetInputExisting.value = this.value;
+        });
+        
+        budgetInputExisting.addEventListener('input', function() {
+            let value = parseInt(this.value) || 0;
+            if (value >= 500 && value <= 100000) {
+                budgetSliderExisting.value = value;
+            }
+        });
+        
+        // Загрузка чипсов друзей
+        function loadFriendChips() {
             const saved = localStorage.getItem('savedPeople');
+            const container = document.getElementById('friendChips');
+            
+            container.innerHTML = '<div class="friend-chip add-new" onclick="selectFriend(null)">+ Новый получатель</div>';
+            
             if (saved) {
                 const people = JSON.parse(saved);
-                const container = document.getElementById('savedPeople');
-                container.innerHTML = '<h3>Сохранённые получатели:</h3>';
-                
-                people.forEach((person, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'person-card';
-                    card.innerHTML = `
-                        <div class="person-name">${person.name || 'Без имени'}</div>
-                        <div class="person-info">${person.gender === 'male' ? 'М' : person.gender === 'female' ? 'Ж' : ''} | ${person.age || '?'} лет</div>
-                    `;
-                    card.onclick = () => loadPerson(person);
-                    container.appendChild(card);
+                people.forEach(person => {
+                    const chip = document.createElement('div');
+                    chip.className = 'friend-chip';
+                    chip.textContent = person.name;
+                    chip.onclick = () => selectFriend(person);
+                    container.appendChild(chip);
                 });
+            }
+            
+            // Выбираем первый чип
+            if (!currentFriend) {
+                selectFriend(null);
             }
         }
         
-        // Загрузка данных человека в форму
-        function loadPerson(person) {
-            document.getElementById('name').value = person.name || '';
-            document.getElementById('gender').value = person.gender || '';
-            document.getElementById('interests').value = person.interests || '';
-            document.getElementById('event').value = person.event || '';
+        // Выбор друга
+        function selectFriend(person) {
+            currentFriend = person;
             
+            // Обновляем активный чип
+            document.querySelectorAll('.friend-chip').forEach(chip => {
+                chip.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Показываем нужную форму
+            if (person === null) {
+                document.getElementById('newPersonForm').classList.add('active');
+                document.getElementById('existingPersonForm').classList.remove('active');
+                clearNewPersonForm();
+            } else {
+                document.getElementById('newPersonForm').classList.remove('active');
+                document.getElementById('existingPersonForm').classList.add('active');
+                loadExistingPerson(person);
+            }
+        }
+        
+        // Очистка формы нового получателя
+        function clearNewPersonForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('day').value = '';
+            document.getElementById('month').value = '';
+            document.getElementById('year').value = '';
+            document.getElementById('interests').value = '';
+            document.getElementById('event').value = '';
+            document.getElementById('budgetInput').value = 5000;
+            document.getElementById('budgetSlider').value = 5000;
+        }
+        
+        // Загрузка данных существующего человека
+        function loadExistingPerson(person) {
+            document.getElementById('eventExisting').value = person.event || '';
             const budget = person.budget || 5000;
-            document.getElementById('budgetInput').value = budget;
+            document.getElementById('budgetInputExisting').value = budget;
             if (budget >= 500 && budget <= 100000) {
-                document.getElementById('budgetSlider').value = budget;
+                document.getElementById('budgetSliderExisting').value = budget;
+            }
+        }
+        
+        // Отправка для существующего человека
+        function submitExistingPerson() {
+            const data = {
+                ...currentFriend,
+                event: document.getElementById('eventExisting').value,
+                budget: document.getElementById('budgetInputExisting').value
+            };
+            
+            tg.sendData(JSON.stringify(data));
+            tg.close();
+        }
+        
+        // Список людей
+        function loadPeopleList() {
+            const saved = localStorage.getItem('savedPeople');
+            const listContainer = document.getElementById('peopleList');
+            const emptyState = document.getElementById('emptyPeople');
+            
+            if (!saved || JSON.parse(saved).length === 0) {
+                listContainer.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
             }
             
-            if (person.birthdate) {
-                const parts = person.birthdate.split('-');
-                document.getElementById('year').value = parts[0];
-                document.getElementById('month').value = parseInt(parts[1]);
-                document.getElementById('day').value = parseInt(parts[2]);
-            }
+            emptyState.style.display = 'none';
+            const people = JSON.parse(saved);
+            listContainer.innerHTML = '';
+            
+            people.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'person-card';
+                
+                const genderIcon = person.gender === 'male' ? '👨' : person.gender === 'female' ? '👩' : '👤';
+                const age = person.age ? `${person.age} лет` : 'Возраст не указан';
+                const interests = person.interests ? person.interests.substring(0, 50) + '...' : 'Интересы не указаны';
+                
+                card.innerHTML = `
+                    <div class="person-name">${genderIcon} ${person.name || 'Без имени'}</div>
+                    <div class="person-info">${age}</div>
+                    <div class="person-details">${interests}</div>
+                `;
+                
+                card.onclick = () => {
+                    showPage('giftPage');
+                    setTimeout(() => selectFriend(person), 100);
+                };
+                
+                listContainer.appendChild(card);
+            });
         }
         
         // Сохранение человека
@@ -455,7 +832,6 @@
             const saved = localStorage.getItem('savedPeople');
             let people = saved ? JSON.parse(saved) : [];
             
-            // Вычисляем возраст
             if (data.birthdate) {
                 const birthDate = new Date(data.birthdate);
                 const today = new Date();
@@ -467,7 +843,6 @@
                 data.age = age;
             }
             
-            // Проверяем есть ли уже такой человек
             const existingIndex = people.findIndex(p => p.name === data.name);
             if (existingIndex >= 0) {
                 people[existingIndex] = data;
@@ -478,8 +853,8 @@
             localStorage.setItem('savedPeople', JSON.stringify(people));
         }
         
-        // Загружаем при старте
-        loadSavedPeople();
+        // Инициализация при загрузке
+        loadFriendChips();
         
         // Обработка формы
         document.getElementById('giftForm').addEventListener('submit', function(e) {
@@ -503,12 +878,10 @@
                 budget: document.getElementById('budgetInput').value
             };
             
-            // Сохраняем человека
             if (data.name) {
                 savePerson(data);
             }
             
-            // Отправляем данные боту
             tg.sendData(JSON.stringify(data));
             tg.close();
         });
