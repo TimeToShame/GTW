@@ -30,12 +30,12 @@
         }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
         }
         
@@ -54,6 +54,57 @@
             resize: vertical;
         }
         
+        /* Стили для слайдера бюджета */
+        .budget-container {
+            margin-top: 10px;
+        }
+        
+        .budget-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--tg-theme-button-color, #0088cc);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--tg-theme-hint-color, #ccc);
+            outline: none;
+            padding: 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #0088cc);
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #0088cc);
+            cursor: pointer;
+            border: none;
+        }
+        
+        /* Дата рождения - удобные селекты */
+        .date-selects {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .date-selects select {
+            flex: 1;
+        }
+        
         button {
             width: 100%;
             padding: 14px;
@@ -70,21 +121,50 @@
         button:active {
             opacity: 0.8;
         }
+        
+        .saved-people {
+            margin-bottom: 20px;
+        }
+        
+        .person-card {
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .person-card:active {
+            opacity: 0.7;
+        }
+        
+        .person-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .person-info {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎁 Подбор подарка</h1>
         
+        <!-- Сохранённые люди -->
+        <div id="savedPeople" class="saved-people"></div>
+        
         <form id="giftForm">
             <div class="form-group">
                 <label for="name">Имя получателя</label>
-                <input type="text" id="name" required>
+                <input type="text" id="name" placeholder="Введите имя">
             </div>
             
             <div class="form-group">
                 <label for="gender">Пол</label>
-                <select id="gender" required>
+                <select id="gender">
                     <option value="">Выберите...</option>
                     <option value="male">Мужской</option>
                     <option value="female">Женский</option>
@@ -92,8 +172,18 @@
             </div>
             
             <div class="form-group">
-                <label for="birthdate">Дата рождения</label>
-                <input type="date" id="birthdate" required>
+                <label>Дата рождения</label>
+                <div class="date-selects">
+                    <select id="day">
+                        <option value="">День</option>
+                    </select>
+                    <select id="month">
+                        <option value="">Месяц</option>
+                    </select>
+                    <select id="year">
+                        <option value="">Год</option>
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
@@ -101,28 +191,31 @@
                 <textarea id="interests" placeholder="Опишите интересы человека..."></textarea>
             </div>
             
-           <div class="form-group">
-                 <label for="event">Событие</label>
-                 <select id="event" required>
-                <option value="">Выберите...</option>
-                <option value="birthday">День рождения</option>
-                <option value="new_year">Новый год</option>
-                <option value="8march">8 Марта</option>
-                <option value="23february">23 Февраля</option>
-                <option value="anniversary">Годовщина отношений</option>
-                <option value="wedding">Свадьба</option>
-                <option value="valentines">День Святого Валентина</option>
-                <option value="christmas">Рождество</option>
-                <option value="housewarming">Новоселье</option>
-                <option value="just_because">Просто так</option>
-                <option value="apology">Извинение</option>
-                <option value="other">Другое</option>
-                    </select>
-          </div>
+            <div class="form-group">
+                <label for="event">Событие</label>
+                <select id="event">
+                    <option value="">Выберите...</option>
+                    <option value="birthday">День рождения</option>
+                    <option value="new_year">Новый год</option>
+                    <option value="8march">8 Марта</option>
+                    <option value="23february">23 Февраля</option>
+                    <option value="anniversary">Годовщина отношений</option>
+                    <option value="wedding">Свадьба</option>
+                    <option value="valentines">День Святого Валентина</option>
+                    <option value="christmas">Рождество</option>
+                    <option value="housewarming">Новоселье</option>
+                    <option value="just_because">Просто так</option>
+                    <option value="apology">Извинение</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
             
             <div class="form-group">
-                <label for="budget">Бюджет (₽)</label>
-                <input type="number" id="budget" min="0" step="100" required>
+                <label for="budget">Бюджет</label>
+                <div class="budget-container">
+                    <div class="budget-value" id="budgetValue">5 000 ₽</div>
+                    <input type="range" id="budget" min="500" max="50000" step="500" value="5000">
+                </div>
             </div>
             
             <button type="submit">Подобрать подарок</button>
@@ -130,28 +223,146 @@
     </div>
 
     <script>
-        // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
+        
+        // Генерация дней
+        const daySelect = document.getElementById('day');
+        for (let i = 1; i <= 31; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            daySelect.appendChild(option);
+        }
+        
+        // Генерация месяцев
+        const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 
+                        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+        const monthSelect = document.getElementById('month');
+        months.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index + 1;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+        
+        // Генерация годов (последние 100 лет)
+        const yearSelect = document.getElementById('year');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= currentYear - 100; i--) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            yearSelect.appendChild(option);
+        }
+        
+        // Обновление значения бюджета
+        const budgetSlider = document.getElementById('budget');
+        const budgetValue = document.getElementById('budgetValue');
+        
+        budgetSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            budgetValue.textContent = value.toLocaleString('ru-RU') + ' ₽';
+        });
+        
+        // Загрузка сохранённых людей
+        function loadSavedPeople() {
+            const saved = localStorage.getItem('savedPeople');
+            if (saved) {
+                const people = JSON.parse(saved);
+                const container = document.getElementById('savedPeople');
+                container.innerHTML = '<h3 style="margin-bottom: 10px;">Сохранённые получатели:</h3>';
+                
+                people.forEach((person, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'person-card';
+                    card.innerHTML = `
+                        <div class="person-name">${person.name || 'Без имени'}</div>
+                        <div class="person-info">${person.gender === 'male' ? 'М' : person.gender === 'female' ? 'Ж' : ''} | ${person.age || '?'} лет</div>
+                    `;
+                    card.onclick = () => loadPerson(person);
+                    container.appendChild(card);
+                });
+            }
+        }
+        
+        // Загрузка данных человека в форму
+        function loadPerson(person) {
+            document.getElementById('name').value = person.name || '';
+            document.getElementById('gender').value = person.gender || '';
+            document.getElementById('interests').value = person.interests || '';
+            document.getElementById('event').value = person.event || '';
+            document.getElementById('budget').value = person.budget || 5000;
+            budgetValue.textContent = (person.budget || 5000).toLocaleString('ru-RU') + ' ₽';
+            
+            if (person.birthdate) {
+                const parts = person.birthdate.split('-');
+                document.getElementById('year').value = parts[0];
+                document.getElementById('month').value = parseInt(parts[1]);
+                document.getElementById('day').value = parseInt(parts[2]);
+            }
+        }
+        
+        // Сохранение человека
+        function savePerson(data) {
+            const saved = localStorage.getItem('savedPeople');
+            let people = saved ? JSON.parse(saved) : [];
+            
+            // Вычисляем возраст
+            if (data.birthdate) {
+                const birthDate = new Date(data.birthdate);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                data.age = age;
+            }
+            
+            // Проверяем есть ли уже такой человек
+            const existingIndex = people.findIndex(p => p.name === data.name);
+            if (existingIndex >= 0) {
+                people[existingIndex] = data;
+            } else {
+                people.push(data);
+            }
+            
+            localStorage.setItem('savedPeople', JSON.stringify(people));
+        }
+        
+        // Загружаем при старте
+        loadSavedPeople();
         
         // Обработка формы
         document.getElementById('giftForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Собираем данные
+            const day = document.getElementById('day').value;
+            const month = document.getElementById('month').value;
+            const year = document.getElementById('year').value;
+            
+            let birthdate = '';
+            if (day && month && year) {
+                birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
+            
             const data = {
                 name: document.getElementById('name').value,
                 gender: document.getElementById('gender').value,
-                birthdate: document.getElementById('birthdate').value,
+                birthdate: birthdate,
                 interests: document.getElementById('interests').value,
                 event: document.getElementById('event').value,
                 budget: document.getElementById('budget').value
             };
             
+            // Сохраняем человека
+            if (data.name) {
+                savePerson(data);
+            }
+            
             // Отправляем данные боту
             tg.sendData(JSON.stringify(data));
-            
-            // Закрываем Mini App
             tg.close();
         });
     </script>
