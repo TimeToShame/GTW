@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from dotenv import load_dotenv
 import os
-from database import db
+from database_pg import db
 
 # Загружаем токен из .env файла
 load_dotenv()
