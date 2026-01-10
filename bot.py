@@ -18,7 +18,7 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 # URL Mini App
-MINI_APP_URL = "https://timetoshame.github.io/GTW/frontend/index.html?v=10"
+MINI_APP_URL = "https://timetoshame.github.io/GTW/frontend/index.html?v=11"
 
 # Обработчик команды /start
 @dp.message(Command("start"))
