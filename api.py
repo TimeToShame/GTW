@@ -6,7 +6,7 @@ import json
 import hashlib
 import hmac
 from urllib.parse import parse_qs
-from database import db
+from database_pg import db
 import os
 from dotenv import load_dotenv
 

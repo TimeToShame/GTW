@@ -8,7 +8,7 @@ from database_pg import db
 
 # Загружаем токен из .env файла
 load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+BOT_TOKEN = os.getenv('8419652448:AAEv393pXNiHbEUcdogjhMt3o9LX9iyJAck')
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
