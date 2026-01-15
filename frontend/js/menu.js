@@ -73,6 +73,10 @@
                             <span class="nav-item-icon">🎁</span>
                             <span class="nav-item-text">Подбор подарков</span>
                         </a>
+                        <a href="vip-gifts.html" class="nav-item" data-page="vip-gifts">
+                            <span class="nav-item-icon">👑</span>
+                            <span class="nav-item-text">VIP Подарки</span>
+                        </a>
                     </div>
                 </nav>
                 <div class="sidebar-footer">
