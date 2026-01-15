@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мои близкие - WTG</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .friends-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .friends-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .add-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        .friend-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .friend-card:hover {
+            border-color: var(--accent);
+        }
+
+        .friend-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .friend-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .friend-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .friend-relation {
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .friend-details {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .friend-arrow {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--overlay);
+            z-index: 400;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: var(--bg-primary);
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--bg-secondary);
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .gender-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .gender-btn.active {
+            border-color: var(--accent);
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        .delete-btn {
+            background-color: #e53935;
+            border-color: #e53935;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c62828;
+            border-color: #c62828;
+        }
+
+        /* Birthday display */
+        .birthday-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .birthday-badge {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .days-until {
+            font-size: 12px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="header-title">Мои близкие</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="friends-header">
+                <span class="friends-count" id="friendsCount">Загрузка...</span>
+                <button class="add-btn" id="addBtn" title="Добавить">+</button>
+            </div>
+
+            <!-- Friends List -->
+            <div id="friendsList"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-icon">👥</div>
+                <h3 class="empty-state-title">Пока никого нет</h3>
+                <p class="empty-state-text">Добавьте близких людей, чтобы подбирать им подарки</p>
+                <button class="btn btn-primary" id="addFirstBtn">+ Добавить первого</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Добавить близкого</h2>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+
+            <form id="personForm">
+                <input type="hidden" id="personId">
+
+                <div class="form-group">
+                    <label class="form-label">Имя *</label>
+                    <input type="text" class="form-input" id="personName" placeholder="Как зовут?" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Кто это</label>
+                    <select class="form-select" id="personRelation">
+                        <option value="">Выберите...</option>
+                        <optgroup label="Семья">
+                            <option value="папа">👨 Папа</option>
+                            <option value="мама">👩 Мама</option>
+                            <option value="брат">👦 Брат</option>
+                            <option value="сестра">👧 Сестра</option>
+                            <option value="муж">💑 Муж</option>
+                            <option value="жена">💑 Жена</option>
+                            <option value="сын">👦 Сын</option>
+                            <option value="дочь">👧 Дочь</option>
+                            <option value="дедушка">👴 Дедушка</option>
+                            <option value="бабушка">👵 Бабушка</option>
+                            <option value="дядя">👨 Дядя</option>
+                            <option value="тётя">👩 Тётя</option>
+                        </optgroup>
+                        <optgroup label="Отношения">
+                            <option value="парень">💙 Парень</option>
+                            <option value="девушка">💗 Девушка</option>
+                        </optgroup>
+                        <optgroup label="Друзья">
+                            <option value="лучший друг">⭐ Лучший друг</option>
+                            <option value="лучшая подруга">⭐ Лучшая подруга</option>
+                            <option value="друг">👋 Друг</option>
+                            <option value="подруга">👋 Подруга</option>
+                        </optgroup>
+                        <optgroup label="Работа">
+                            <option value="коллега">💼 Коллега</option>
+                            <option value="начальник">👔 Начальник</option>
+                        </optgroup>
+                        <option value="другое">Другое</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Пол</label>
+                    <div class="gender-buttons">
+                        <button type="button" class="gender-btn" data-gender="m">👨 Мужской</button>
+                        <button type="button" class="gender-btn" data-gender="f">👩 Женский</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Дата рождения</label>
+                    <input type="date" class="form-input" id="personBirthdate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Интересы и увлечения</label>
+                    <textarea class="form-textarea" id="personInterests" placeholder="Чем увлекается? Что любит? Хобби..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancelBtn">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Сохранить</button>
+                </div>
+
+                <div class="modal-actions" id="deleteSection" style="display: none; margin-top: 12px;">
+                    <button type="button" class="btn delete-btn btn-block" id="deleteBtn">🗑 Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/theme.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        // State
+        let closePeople = [];
+        let editingPerson = null;
+        let selectedGender = '';
+
+        // DOM Elements
+        const modalOverlay = document.getElementById('modalOverlay');
+        const personForm = document.getElementById('personForm');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            API.initTelegram();
+            await loadFriends();
+            setupEventListeners();
+        });
+
+        async function loadFriends() {
+            try {
+                const data = await API.getClosePeople();
+                closePeople = data.people || [];
+                renderFriends();
+            } catch (error) {
+                console.error('Error loading friends:', error);
+                document.getElementById('friendsCount').textContent = 'Ошибка загрузки';
+            }
+        }
+
+        function renderFriends() {
+            const container = document.getElementById('friendsList');
+            const emptyState = document.getElementById('emptyState');
+            const countEl = document.getElementById('friendsCount');
+
+            if (closePeople.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                countEl.textContent = '0 человек';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            countEl.textContent = `${closePeople.length} ${declension(closePeople.length, ['человек', 'человека', 'человек'])}`;
+
+            container.innerHTML = closePeople.map(person => {
+                const age = calculateAge(person.birthdate);
+                const ageText = age ? `${age} ${declension(age, ['год', 'года', 'лет'])}` : '';
+                const genderIcon = person.gender === 'm' ? '👨' : person.gender === 'f' ? '👩' : '👤';
+                const daysUntil = getDaysUntilBirthday(person.birthdate);
+                
+                let birthdayBadge = '';
+                if (daysUntil !== null) {
+                    if (daysUntil === 0) {
+                        birthdayBadge = '<span class="birthday-badge">🎂 Сегодня!</span>';
+                    } else if (daysUntil <= 7) {
+                        birthdayBadge = `<span class="days-until">🎂 через ${daysUntil} ${declension(daysUntil, ['день', 'дня', 'дней'])}</span>`;
+                    } else if (daysUntil <= 30) {
+                        birthdayBadge = `<span class="days-until">🎂 через ${daysUntil} дн.</span>`;
+                    }
+                }
+
+                // Получаем relation из interests (временно, пока не добавим отдельное поле)
+                const relation = person.relation || '';
+
+                return `
+                    <div class="friend-card" data-id="${person.id}">
+                        <div class="friend-card-header">
+                            <div class="friend-avatar">${genderIcon}</div>
+                            <div class="friend-info">
+                                <div class="friend-name">${escapeHtml(person.name)}</div>
+                                ${relation ? `<div class="friend-relation">${escapeHtml(relation)}</div>` : ''}
+                                <div class="friend-details">
+                                    ${ageText}${ageText && person.interests ? ' • ' : ''}${person.interests ? truncate(person.interests, 30) : ''}
+                                </div>
+                                ${birthdayBadge ? `<div class="birthday-info">${birthdayBadge}</div>` : ''}
+                            </div>
+                            <span class="friend-arrow">→</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            container.querySelectorAll('.friend-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = parseInt(card.dataset.id);
+                    const person = closePeople.find(p => p.id === id);
+                    if (person) openEditModal(person);
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            // Add buttons
+            document.getElementById('addBtn').addEventListener('click', openAddModal);
+            document.getElementById('addFirstBtn').addEventListener('click', openAddModal);
+
+            // Modal close
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            // Gender buttons
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedGender = this.dataset.gender;
+                });
+            });
+
+            // Form submit
+            personForm.addEventListener('submit', handleSubmit);
+
+            // Delete button
+            document.getElementById('deleteBtn').addEventListener('click', handleDelete);
+        }
+
+        function openAddModal() {
+            editingPerson = null;
+            selectedGender = '';
+            
+            document.getElementById('modalTitle').textContent = 'Добавить близкого';
+            document.getElementById('personId').value = '';
+            document.getElementById('personName').value = '';
+            document.getElementById('personRelation').value = '';
+            document.getElementById('personBirthdate').value = '';
+            document.getElementById('personInterests').value = '';
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('deleteSection').style.display = 'none';
+            
+            modalOverlay.classList.add('active');
+        }
+
+        function openEditModal(person) {
+            editingPerson = person;
+            selectedGender = person.gender || '';
+            
+            document.getElementById('modalTitle').textContent = 'Редактировать';
+            document.getElementById('personId').value = person.id;
+            document.getElementById('personName').value = person.name || '';
+            document.getElementById('personRelation').value = person.relation || '';
+            document.getElementById('personBirthdate').value = person.birthdate || '';
+            document.getElementById('personInterests').value = person.interests || '';
+            
+            document.querySelectorAll('.gender-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.gender === selectedGender);
+            });
+            
+            document.getElementById('deleteSection').style.display = 'block';
+            
+            modalOverlay.classList.add('active');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            editingPerson = null;
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('personName').value.trim();
+            const relation = document.getElementById('personRelation').value;
+            const birthdate = document.getElementById('personBirthdate').value;
+            const interests = document.getElementById('personInterests').value.trim();
+
+            if (!name) {
+                API.showAlert('Введите имя');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Сохранение...';
+
+            try {
+                if (editingPerson) {
+                    // Update
+                    await API.updateClosePerson({
+                        person_db_id: editingPerson.id,
+                        name: name,
+                        gender: selectedGender,
+                        birthdate: birthdate,
+                        interests: interests,
+                        relation: relation
+                    });
+                } else {
+                    // Add new
+                    await API.addClosePerson({
+                        name: name,
+                        gender: selectedGender,
+                        birthdate: birthdate,
+                        interests: interests,
+                        relation: relation
+                    });
+                }
+
+                closeModal();
+                await loadFriends();
+                
+            } catch (error) {
+                console.error('Error saving:', error);
+                API.showAlert('Ошибка сохранения: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Сохранить';
+            }
+        }
+
+        async function handleDelete() {
+            if (!editingPerson) return;
+
+            API.showConfirm(`Удалить ${editingPerson.name} из списка?`, async (confirmed) => {
+                if (!confirmed) return;
+
+                try {
+                    await API.deleteClosePeople([editingPerson.id]);
+                    closeModal();
+                    await loadFriends();
+                } catch (error) {
+                    console.error('Error deleting:', error);
+                    API.showAlert('Ошибка удаления');
+                }
+            });
+        }
+
+        // Helpers
+        function calculateAge(birthdate) {
+            if (!birthdate) return null;
+            const today = new Date();
+            const birth = new Date(birthdate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function getDaysUntilBirthday(birthdate) {
+            if (!birthdate) return null;
+            const today = new Date();
+            const birth = new Date(birthdate);
+            
+            // Set birthday to this year
+            let nextBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+            
+            // If birthday has passed this year, set to next year
+            if (nextBirthday < today) {
+                nextBirthday.setFullYear(today.getFullYear() + 1);
+            }
+            
+            const diffTime = nextBirthday - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays;
+        }
+
+        function declension(number, words) {
+            const cases = [2, 0, 1, 1, 1, 2];
+            return words[
+                number % 100 > 4 && number % 100 < 20 
+                    ? 2 
+                    : cases[Math.min(number % 10, 5)]
+            ];
+        }
+
+        function truncate(str, length) {
+            if (str.length <= length) return str;
+            return str.slice(0, length) + '...';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

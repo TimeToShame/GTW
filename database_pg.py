@@ -29,10 +29,11 @@ class ClosePerson(Base):
     owner_id = Column(String, nullable=False)
     person_id = Column(String)
     name = Column(String, nullable=False)
+    relation = Column(String)  # Кто это: папа, мама, друг и т.д.
     gender = Column(String)
     birthdate = Column(String)
     interests = Column(Text)
-    age = Column(Integer)
+    age = Column(Integer)  # Оставляем для совместимости
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class Invitation(Base):
@@ -52,23 +53,33 @@ class Database:
         # Создаём движок с настройками пула соединений
         self.engine = create_engine(
             DATABASE_URL,
-            pool_pre_ping=True,  # Проверка соединения перед использованием
-            pool_recycle=300,    # Переподключение каждые 5 минут
+            pool_pre_ping=True,
+            pool_recycle=300,
         )
         
         # Создаём таблицы
         Base.metadata.create_all(self.engine)
         
+        # Добавляем колонку relation если её нет (миграция)
+        self._migrate_add_relation_column()
+        
         # Создаём фабрику сессий
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
     
+    def _migrate_add_relation_column(self):
+        """Добавляем колонку relation если её нет"""
+        try:
+            with self.engine.connect() as conn:
+                conn.execute("ALTER TABLE close_people ADD COLUMN IF NOT EXISTS relation VARCHAR")
+                conn.commit()
+        except Exception as e:
+            print(f"Migration note: {e}")
+    
     def get_session(self):
-        """Получить сессию с автоматическим rollback при ошибке"""
         return self.Session()
     
     def safe_commit(self, session):
-        """Безопасный коммит с обработкой ошибок"""
         try:
             session.commit()
         except Exception as e:
@@ -76,7 +87,6 @@ class Database:
             raise e
     
     def add_user(self, user_id, username=None, first_name=None):
-        """Добавить пользователя"""
         session = self.get_session()
         try:
             existing = session.query(User).filter_by(user_id=str(user_id)).first()
@@ -91,7 +101,6 @@ class Database:
             session.close()
     
     def get_user(self, user_id):
-        """Получить пользователя"""
         session = self.get_session()
         try:
             user = session.query(User).filter_by(user_id=str(user_id)).first()
@@ -106,14 +115,14 @@ class Database:
         finally:
             session.close()
     
-    def add_close_person(self, owner_id, name, person_id=None, gender='', birthdate='', interests='', age=None):
-        """Добавить близкого человека"""
+    def add_close_person(self, owner_id, name, person_id=None, relation='', gender='', birthdate='', interests='', age=None):
         session = self.get_session()
         try:
             person = ClosePerson(
                 owner_id=str(owner_id),
                 person_id=str(person_id) if person_id else None,
                 name=name,
+                relation=relation,
                 gender=gender,
                 birthdate=birthdate,
                 interests=interests,
@@ -129,7 +138,6 @@ class Database:
             session.close()
     
     def get_close_people(self, owner_id):
-        """Получить всех близких пользователя"""
         session = self.get_session()
         try:
             people = session.query(ClosePerson).filter_by(owner_id=str(owner_id)).order_by(ClosePerson.created_at.desc()).all()
@@ -139,6 +147,7 @@ class Database:
                 'owner_id': p.owner_id,
                 'person_id': p.person_id,
                 'name': p.name,
+                'relation': p.relation,
                 'gender': p.gender,
                 'birthdate': p.birthdate,
                 'interests': p.interests,
@@ -149,7 +158,6 @@ class Database:
             session.close()
     
     def update_close_person(self, person_db_id, **kwargs):
-        """Обновить данные близкого человека"""
         session = self.get_session()
         try:
             person = session.query(ClosePerson).filter_by(id=person_db_id).first()
@@ -165,7 +173,6 @@ class Database:
             session.close()
     
     def delete_close_person(self, person_db_id):
-        """Удалить близкого человека"""
         session = self.get_session()
         try:
             person = session.query(ClosePerson).filter_by(id=person_db_id).first()
@@ -179,7 +186,6 @@ class Database:
             session.close()
     
     def delete_close_people(self, person_db_ids):
-        """Удалить несколько близких людей"""
         session = self.get_session()
         try:
             session.query(ClosePerson).filter(ClosePerson.id.in_(person_db_ids)).delete(synchronize_session=False)
@@ -191,7 +197,6 @@ class Database:
             session.close()
     
     def add_invitation(self, inviter_id, invited_id):
-        """Добавить приглашение"""
         session = self.get_session()
         try:
             existing = session.query(Invitation).filter_by(
@@ -210,7 +215,6 @@ class Database:
             session.close()
     
     def check_invitation(self, inviter_id, invited_id):
-        """Проверить существует ли приглашение"""
         session = self.get_session()
         try:
             invitation = session.query(Invitation).filter_by(

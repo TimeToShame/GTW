@@ -29,6 +29,7 @@ app.add_middleware(
 class ClosePerson(BaseModel):
     name: str
     person_id: Optional[str] = None
+    relation: Optional[str] = ''
     gender: Optional[str] = ''
     birthdate: Optional[str] = ''
     interests: Optional[str] = ''
@@ -37,6 +38,7 @@ class ClosePerson(BaseModel):
 class UpdatePerson(BaseModel):
     person_db_id: int
     name: Optional[str] = None
+    relation: Optional[str] = None
     gender: Optional[str] = None
     birthdate: Optional[str] = None
     interests: Optional[str] = None
@@ -116,6 +118,7 @@ async def add_close_person(person: ClosePerson, authorization: Optional[str] = H
         owner_id=user_id,
         name=person.name,
         person_id=person.person_id,
+        relation=person.relation,
         gender=person.gender,
         birthdate=person.birthdate,
         interests=person.interests,
@@ -136,6 +139,8 @@ async def update_close_person(update: UpdatePerson, authorization: Optional[str]
     updates = {}
     if update.name is not None:
         updates['name'] = update.name
+    if update.relation is not None:
+        updates['relation'] = update.relation
     if update.gender is not None:
         updates['gender'] = update.gender
     if update.birthdate is not None:
