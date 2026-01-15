@@ -380,7 +380,11 @@
 
                 <div class="form-group">
                     <label class="form-label">Дата рождения</label>
-                    <input type="date" class="form-input" id="personBirthdate">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" class="form-input" id="birthDay" placeholder="День" min="1" max="31" style="flex: 1;">
+                        <input type="number" class="form-input" id="birthMonth" placeholder="Месяц" min="1" max="12" style="flex: 1;">
+                        <input type="number" class="form-input" id="birthYear" placeholder="Год" min="1920" max="2025" style="flex: 1.5;">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -531,7 +535,9 @@
             document.getElementById('personId').value = '';
             document.getElementById('personName').value = '';
             document.getElementById('personRelation').value = '';
-            document.getElementById('personBirthdate').value = '';
+            document.getElementById('birthDay').value = '';
+            document.getElementById('birthMonth').value = '';
+            document.getElementById('birthYear').value = '';
             document.getElementById('personInterests').value = '';
             document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('deleteSection').style.display = 'none';
@@ -547,7 +553,21 @@
             document.getElementById('personId').value = person.id;
             document.getElementById('personName').value = person.name || '';
             document.getElementById('personRelation').value = person.relation || '';
-            document.getElementById('personBirthdate').value = person.birthdate || '';
+            
+            // Парсим дату рождения
+            if (person.birthdate) {
+                const parts = person.birthdate.split('-');
+                if (parts.length === 3) {
+                    document.getElementById('birthYear').value = parts[0];
+                    document.getElementById('birthMonth').value = parseInt(parts[1]);
+                    document.getElementById('birthDay').value = parseInt(parts[2]);
+                }
+            } else {
+                document.getElementById('birthDay').value = '';
+                document.getElementById('birthMonth').value = '';
+                document.getElementById('birthYear').value = '';
+            }
+            
             document.getElementById('personInterests').value = person.interests || '';
             
             document.querySelectorAll('.gender-btn').forEach(b => {
@@ -569,12 +589,22 @@
 
             const name = document.getElementById('personName').value.trim();
             const relation = document.getElementById('personRelation').value;
-            const birthdate = document.getElementById('personBirthdate').value;
+            const birthDay = document.getElementById('birthDay').value;
+            const birthMonth = document.getElementById('birthMonth').value;
+            const birthYear = document.getElementById('birthYear').value;
             const interests = document.getElementById('personInterests').value.trim();
 
             if (!name) {
                 API.showAlert('Введите имя');
                 return;
+            }
+
+            // Собираем дату в формат YYYY-MM-DD
+            let birthdate = '';
+            if (birthDay && birthMonth && birthYear) {
+                const day = birthDay.toString().padStart(2, '0');
+                const month = birthMonth.toString().padStart(2, '0');
+                birthdate = `${birthYear}-${month}-${day}`;
             }
 
             const saveBtn = document.getElementById('saveBtn');
