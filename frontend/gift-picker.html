@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Подбор подарков - WTG</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+
+        .person-select {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .person-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .person-info {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .person-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .person-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .person-info-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .person-info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .event-btn {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .event-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .event-btn.active {
+            border-color: var(--accent);
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .budget-inputs {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .budget-input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .budget-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .budget-separator {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .wishes-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            font-size: 15px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            resize: vertical;
+            font-family: inherit;
+            margin-top: 12px;
+        }
+
+        .wishes-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-icon {
+            font-size: 64px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .loading-subtext {
+            margin-top: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Results */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .gift-item {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .gift-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .gift-item-number {
+            width: 28px;
+            height: 28px;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .gift-item-name {
+            flex: 1;
+            margin-left: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .gift-item-price {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 15px;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+
+        .gift-item-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        .gift-item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .gift-action-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .gift-action-btn.primary {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+        }
+
+        .gift-action-btn.secondary {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .gift-action-btn.saved {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .nav-buttons .btn {
+            flex: 1;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .error-text {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <h1 class="header-title">Подбор подарков</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+
+            <!-- Step 1: Choose Person -->
+            <div class="step active" id="step1">
+                <h2 class="mb-16">Кому подбираем подарок?</h2>
+                
+                <select class="person-select" id="personSelect">
+                    <option value="">Выберите человека...</option>
+                </select>
+
+                <div class="person-info" id="personInfo" style="display: none;">
+                    <div class="person-info-row">
+                        <span class="person-info-label">Имя</span>
+                        <span class="person-info-value" id="infoName">—</span>
+                    </div>
+                    <div class="person-info-row">
+                        <span class="person-info-label">Пол</span>
+                        <span class="person-info-value" id="infoGender">—</span>
+                    </div>
+                    <div class="person-info-row">
+                        <span class="person-info-label">Возраст</span>
+                        <span class="person-info-value" id="infoAge">—</span>
+                    </div>
+                    <div class="person-info-row">
+                        <span class="person-info-label">Интересы</span>
+                        <span class="person-info-value" id="infoInterests">—</span>
+                    </div>
+                </div>
+
+                <a href="friends.html" class="list-item mt-16">
+                    <div class="list-item-avatar">➕</div>
+                    <div class="list-item-content">
+                        <div class="list-item-title">Добавить нового человека</div>
+                        <div class="list-item-subtitle">Перейти к списку близких</div>
+                    </div>
+                    <span class="list-item-arrow">→</span>
+                </a>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-primary" id="toStep2" disabled>Далее →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Event & Budget -->
+            <div class="step" id="step2">
+                <h2 class="mb-8">Детали подарка</h2>
+                <p class="text-secondary mb-16" style="font-size: 14px;">Для кого: <strong id="selectedPersonName"></strong></p>
+
+                <h3 class="mb-8">Событие</h3>
+                <div class="event-grid">
+                    <button class="event-btn" data-event="birthday">🎂 День рождения</button>
+                    <button class="event-btn" data-event="new_year">🎄 Новый год</button>
+                    <button class="event-btn" data-event="feb23">🎖 23 февраля</button>
+                    <button class="event-btn" data-event="mar8">💐 8 марта</button>
+                    <button class="event-btn" data-event="wedding">💒 Свадьба</button>
+                    <button class="event-btn" data-event="anniversary">💑 Годовщина</button>
+                    <button class="event-btn" data-event="valentines">❤️ День влюблённых</button>
+                    <button class="event-btn" data-event="just_because">🎁 Просто так</button>
+                </div>
+
+                <h3 class="mt-24 mb-8">Бюджет (₽)</h3>
+                <div class="budget-inputs">
+                    <input type="number" class="budget-input" id="budgetFrom" placeholder="От" min="0">
+                    <span class="budget-separator">—</span>
+                    <input type="number" class="budget-input" id="budgetTo" placeholder="До" min="0">
+                </div>
+
+                <h3 class="mt-24 mb-8">Дополнительные пожелания</h3>
+                <textarea class="wishes-textarea" id="wishes" placeholder="Например: любит путешествия, не дарить одежду, увлекается фотографией..."></textarea>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-outline" id="backToStep1">← Назад</button>
+                    <button class="btn btn-primary" id="findGifts">🎁 Подобрать</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Loading -->
+            <div class="step" id="step3">
+                <div class="loading-container">
+                    <div class="loading-icon">🎁</div>
+                    <div class="loading-text">Подбираем подарки...</div>
+                    <div class="loading-subtext">AI анализирует предпочтения</div>
+                </div>
+            </div>
+
+            <!-- Step 4: Results -->
+            <div class="step" id="step4">
+                <div class="results-header">
+                    <h2>Идеи подарков</h2>
+                    <span class="results-count" id="resultsCount">20 идей</span>
+                </div>
+
+                <div id="giftsList"></div>
+
+                <div class="nav-buttons">
+                    <button class="btn btn-outline" id="backToStep2">← Изменить</button>
+                    <button class="btn btn-primary" id="newSearch">🔄 Новый поиск</button>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div class="step" id="stepError">
+                <div class="error-container">
+                    <div class="error-icon">😔</div>
+                    <h2>Что-то пошло не так</h2>
+                    <p class="error-text" id="errorText">Не удалось подобрать подарки. Попробуйте ещё раз.</p>
+                    <button class="btn btn-primary" id="retryBtn">Попробовать снова</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/theme.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        // State
+        let closePeople = [];
+        let selectedPerson = null;
+        let selectedEvent = '';
+        let gifts = [];
+
+        // Events mapping
+        const eventNames = {
+            'birthday': 'День рождения',
+            'new_year': 'Новый год',
+            'feb23': '23 февраля',
+            'mar8': '8 марта',
+            'wedding': 'Свадьба',
+            'anniversary': 'Годовщина',
+            'valentines': 'День влюблённых',
+            'just_because': 'Просто так'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            API.initTelegram();
+            await loadClosePeople();
+            setupEventListeners();
+        });
+
+        async function loadClosePeople() {
+            try {
+                const data = await API.getClosePeople();
+                closePeople = data.people || [];
+                
+                const select = document.getElementById('personSelect');
+                closePeople.forEach(person => {
+                    const option = document.createElement('option');
+                    option.value = person.id;
+                    option.textContent = person.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading close people:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            // Person select
+            document.getElementById('personSelect').addEventListener('change', function() {
+                const personId = parseInt(this.value);
+                selectedPerson = closePeople.find(p => p.id === personId) || null;
+                
+                const personInfo = document.getElementById('personInfo');
+                const toStep2Btn = document.getElementById('toStep2');
+                
+                if (selectedPerson) {
+                    personInfo.style.display = 'block';
+                    document.getElementById('infoName').textContent = selectedPerson.name || '—';
+                    document.getElementById('infoGender').textContent = 
+                        selectedPerson.gender === 'm' ? 'Мужской' : 
+                        selectedPerson.gender === 'f' ? 'Женский' : '—';
+                    document.getElementById('infoAge').textContent = selectedPerson.age || '—';
+                    document.getElementById('infoInterests').textContent = selectedPerson.interests || '—';
+                    toStep2Btn.disabled = false;
+                } else {
+                    personInfo.style.display = 'none';
+                    toStep2Btn.disabled = true;
+                }
+            });
+
+            // Step navigation
+            document.getElementById('toStep2').addEventListener('click', () => {
+                document.getElementById('selectedPersonName').textContent = selectedPerson.name;
+                showStep('step2');
+            });
+
+            document.getElementById('backToStep1').addEventListener('click', () => showStep('step1'));
+            document.getElementById('backToStep2').addEventListener('click', () => showStep('step2'));
+            document.getElementById('newSearch').addEventListener('click', () => {
+                selectedPerson = null;
+                selectedEvent = '';
+                document.getElementById('personSelect').value = '';
+                document.getElementById('personInfo').style.display = 'none';
+                document.getElementById('toStep2').disabled = true;
+                document.querySelectorAll('.event-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('budgetFrom').value = '';
+                document.getElementById('budgetTo').value = '';
+                document.getElementById('wishes').value = '';
+                showStep('step1');
+            });
+            document.getElementById('retryBtn').addEventListener('click', () => showStep('step2'));
+
+            // Event buttons
+            document.querySelectorAll('.event-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.event-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedEvent = this.dataset.event;
+                });
+            });
+
+            // Find gifts
+            document.getElementById('findGifts').addEventListener('click', findGifts);
+        }
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        async function findGifts() {
+            showStep('step3');
+
+            const budgetFrom = document.getElementById('budgetFrom').value;
+            const budgetTo = document.getElementById('budgetTo').value;
+            const wishes = document.getElementById('wishes').value;
+
+            // Build prompt
+            const prompt = buildPrompt(selectedPerson, selectedEvent, budgetFrom, budgetTo, wishes);
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getOpenRouterKey(),
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'WTG Gift Picker'
+                    },
+                    body: JSON.stringify({
+                        model: 'google/gemini-2.0-flash-exp:free',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.8
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                
+                gifts = parseGifts(content);
+                displayGifts(gifts);
+                showStep('step4');
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorText').textContent = 'Не удалось подобрать подарки: ' + error.message;
+                showStep('stepError');
+            }
+        }
+
+        function getOpenRouterKey() {
+            // Ключ будет передаваться через API бэкенда в проде
+            // Пока используем напрямую для теста
+            return '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';
+        }
+
+        function buildPrompt(person, event, budgetFrom, budgetTo, wishes) {
+            let prompt = `Ты - эксперт по подбору подарков. Подбери 20 идей подарков.
+
+Информация о получателе:
+- Имя: ${person.name}
+- Пол: ${person.gender === 'm' ? 'мужской' : person.gender === 'f' ? 'женский' : 'не указан'}
+- Возраст: ${person.age || 'не указан'}
+- Интересы: ${person.interests || 'не указаны'}`;
+
+            if (event) {
+                prompt += `\n- Событие: ${eventNames[event]}`;
+            }
+
+            if (budgetFrom || budgetTo) {
+                prompt += `\n- Бюджет: ${budgetFrom || '0'} - ${budgetTo || '∞'} рублей`;
+            }
+
+            if (wishes) {
+                prompt += `\n- Дополнительные пожелания: ${wishes}`;
+            }
+
+            prompt += `
+
+ВАЖНО: Ответ дай СТРОГО в формате JSON массива, без markdown, без пояснений, только JSON:
+[
+  {
+    "name": "Название подарка",
+    "description": "Краткое описание почему это хороший подарок (1-2 предложения)",
+    "price": "примерная цена в рублях (только число)"
+  }
+]
+
+Подбери разнообразные подарки в разных ценовых категориях. Учитывай пол, возраст и интересы.`;
+
+            return prompt;
+        }
+
+        function parseGifts(content) {
+            try {
+                // Удаляем возможные markdown обёртки
+                let cleaned = content.trim();
+                if (cleaned.startsWith('```json')) {
+                    cleaned = cleaned.slice(7);
+                }
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.slice(3);
+                }
+                if (cleaned.endsWith('```')) {
+                    cleaned = cleaned.slice(0, -3);
+                }
+                cleaned = cleaned.trim();
+
+                return JSON.parse(cleaned);
+            } catch (error) {
+                console.error('Parse error:', error);
+                console.log('Raw content:', content);
+                return [];
+            }
+        }
+
+        function displayGifts(gifts) {
+            const container = document.getElementById('giftsList');
+            container.innerHTML = '';
+
+            document.getElementById('resultsCount').textContent = `${gifts.length} идей`;
+
+            gifts.forEach((gift, index) => {
+                const searchQuery = encodeURIComponent(gift.name);
+                const marketUrl = `https://market.yandex.ru/search?text=${searchQuery}`;
+
+                const giftHtml = `
+                    <div class="gift-item">
+                        <div class="gift-item-header">
+                            <span class="gift-item-number">${index + 1}</span>
+                            <span class="gift-item-name">${escapeHtml(gift.name)}</span>
+                            <span class="gift-item-price">~${formatPrice(gift.price)} ₽</span>
+                        </div>
+                        <div class="gift-item-description">${escapeHtml(gift.description)}</div>
+                        <div class="gift-item-actions">
+                            <a href="${marketUrl}" target="_blank" class="gift-action-btn primary">🛒 Найти на Маркете</a>
+                            <button class="gift-action-btn secondary" onclick="saveGift(${index})">💾 Сохранить</button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', giftHtml);
+            });
+        }
+
+        function saveGift(index) {
+            const gift = gifts[index];
+            // TODO: Сохранить в профиль близкого через API
+            
+            const btn = event.target;
+            btn.textContent = '✓ Сохранено';
+            btn.classList.remove('secondary');
+            btn.classList.add('saved');
+            btn.disabled = true;
+
+            API.showAlert(`"${gift.name}" сохранён в список подарков для ${selectedPerson.name}`);
+        }
+
+        function formatPrice(price) {
+            const num = parseInt(price) || 0;
+            return num.toLocaleString('ru-RU');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
