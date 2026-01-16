@@ -4,7 +4,7 @@
     'use strict';
 
     // URL API (Render)
-    const API_BASE_URL = 'https://gift-bot-api-lm9c.onrender.com';
+    const API_BASE_URL = 'https://gtw-lq6s.onrender.com';
 
     // Получаем initData из Telegram
     function getInitData() {
