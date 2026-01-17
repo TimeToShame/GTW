@@ -96,6 +96,51 @@
         });
     }
 
+    // === ПРОФИЛЬ ===
+
+    // Получить профиль
+    async function getProfile() {
+        return apiRequest('/api/profile');
+    }
+
+    // Обновить профиль
+    async function updateProfile(data) {
+        return apiRequest('/api/profile', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // === WISHLIST ===
+
+    // Получить wishlist
+    async function getWishlist() {
+        return apiRequest('/api/wishlist');
+    }
+
+    // Добавить товар в wishlist
+    async function addWishlistItem(data) {
+        return apiRequest('/api/wishlist', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Обновить товар в wishlist
+    async function updateWishlistItem(data) {
+        return apiRequest('/api/wishlist', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Удалить товар из wishlist
+    async function deleteWishlistItem(itemId) {
+        return apiRequest(`/api/wishlist/${itemId}`, {
+            method: 'DELETE'
+        });
+    }
+
     // === TELEGRAM WEBAPP ===
 
     // Инициализация Telegram WebApp
@@ -173,14 +218,24 @@
         // Данные
         getInitData,
         getTelegramUser,
-        
+
         // CRUD операции
         getClosePeople,
         addClosePerson,
         updateClosePerson,
         deleteClosePeople,
         acceptInvitation,
-        
+
+        // Профиль
+        getProfile,
+        updateProfile,
+
+        // Wishlist
+        getWishlist,
+        addWishlistItem,
+        updateWishlistItem,
+        deleteWishlistItem,
+
         // Telegram WebApp
         initTelegram,
         showMainButton,

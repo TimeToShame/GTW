@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мой профиль - WTG</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Профильные стили */
+        .profile-header {
+            text-align: center;
+            padding: 24px 16px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            background: var(--tg-theme-button-color, #3390ec);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        .profile-username {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            box-sizing: border-box;
+        }
+
+        .form-input:disabled {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-hint-color, #999);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .wishlist-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .wishlist-item-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: var(--tg-theme-hint-color, #ccc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .wishlist-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wishlist-item-content {
+            padding: 8px;
+        }
+
+        .wishlist-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        .wishlist-item-price {
+            font-size: 12px;
+            color: var(--tg-theme-link-color, #3390ec);
+            font-weight: bold;
+        }
+
+        .wishlist-item-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .empty-wishlist {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+
+        .empty-wishlist-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        /* Модальное окно для добавления подарка */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--tg-theme-bg-color, #fff);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="backBtn">←</button>
+        <h1 class="header-title">Мой профиль</h1>
+        <button class="menu-btn" style="visibility: hidden;">•</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Профиль -->
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">
+                    👤
+                </div>
+                <div class="profile-name" id="profileName">Загрузка...</div>
+                <div class="profile-username" id="profileUsername"></div>
+            </div>
+
+            <!-- Форма профиля -->
+            <div class="card">
+                <h3 class="card-title">Личная информация</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Имя</label>
+                    <input type="text" class="form-input" id="nameInput" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Дата рождения</label>
+                    <input type="date" class="form-input" id="birthdateInput">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Интересы</label>
+                    <textarea class="form-input form-textarea" id="interestsInput" placeholder="Расскажите о своих интересах, хобби, предпочтениях..."></textarea>
+                    <small style="color: var(--tg-theme-hint-color, #999); font-size: 12px;">AI будет использовать эту информацию для подбора подарков</small>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="saveProfileBtn">
+                    Сохранить изменения
+                </button>
+            </div>
+
+            <!-- Кнопка поделиться -->
+            <div class="card mt-16">
+                <h3 class="card-title">Поделиться профилем</h3>
+                <p class="card-text mb-16">Отправь ссылку друзьям, чтобы они могли добавить тебя в близкие</p>
+                <button class="btn btn-primary btn-block" id="shareProfileBtn">
+                    📤 Поделиться
+                </button>
+            </div>
+
+            <!-- Wishlist -->
+            <div class="card mt-16">
+                <div class="section-header">
+                    <h3 class="section-title">Мой вишлист</h3>
+                    <button class="btn btn-primary" id="addGiftBtn">+ Добавить</button>
+                </div>
+
+                <div id="wishlistContainer">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно добавления подарка -->
+    <div class="modal" id="addGiftModal">
+        <div class="modal-content">
+            <h3 class="modal-header">Добавить подарок</h3>
+
+            <div class="form-group">
+                <label class="form-label">Ссылка на товар</label>
+                <input type="url" class="form-input" id="giftUrlInput" placeholder="https://...">
+                <small style="color: var(--tg-theme-hint-color, #999); font-size: 12px;">AI автоматически извлечёт информацию о товаре</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Название</label>
+                <input type="text" class="form-input" id="giftTitleInput" placeholder="Название подарка">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea class="form-input form-textarea" id="giftDescriptionInput" placeholder="Описание"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Цена</label>
+                <input type="text" class="form-input" id="giftPriceInput" placeholder="1000 ₽">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ссылка на изображение</label>
+                <input type="url" class="form-input" id="giftImageInput" placeholder="https://...">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="cancelGiftBtn" style="flex: 1;">Отмена</button>
+                <button class="btn btn-primary" id="saveGiftBtn" style="flex: 1;">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/theme.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let currentProfile = null;
+        let currentWishlist = [];
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            const tg = API.initTelegram();
+
+            // Кнопка назад
+            document.getElementById('backBtn').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // Загрузка профиля
+            await loadProfile();
+            await loadWishlist();
+
+            // Кнопка сохранения профиля
+            document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+
+            // Кнопка поделиться
+            document.getElementById('shareProfileBtn').addEventListener('click', shareProfile);
+
+            // Кнопка добавить подарок
+            document.getElementById('addGiftBtn').addEventListener('click', () => {
+                document.getElementById('addGiftModal').classList.add('active');
+                clearGiftForm();
+            });
+
+            // Кнопки модального окна
+            document.getElementById('cancelGiftBtn').addEventListener('click', () => {
+                document.getElementById('addGiftModal').classList.remove('active');
+            });
+
+            document.getElementById('saveGiftBtn').addEventListener('click', saveGift);
+
+            // AI парсинг URL
+            document.getElementById('giftUrlInput').addEventListener('blur', async function() {
+                const url = this.value.trim();
+                if (url && isValidUrl(url)) {
+                    // Пока просто заполним название из URL (в будущем - AI парсинг)
+                    if (!document.getElementById('giftTitleInput').value) {
+                        document.getElementById('giftTitleInput').value = extractDomainName(url);
+                    }
+                }
+            });
+        });
+
+        // Загрузить профиль
+        async function loadProfile() {
+            try {
+                const user = API.getTelegramUser();
+                const data = await API.getProfile();
+                currentProfile = data.profile;
+
+                // Аватар
+                if (user && user.photo_url) {
+                    document.getElementById('profileAvatar').innerHTML =
+                        `<img src="${user.photo_url}" alt="Avatar">`;
+                } else {
+                    const initials = user && user.first_name ? user.first_name[0].toUpperCase() : '👤';
+                    document.getElementById('profileAvatar').textContent = initials;
+                }
+
+                // Имя
+                const name = user && user.first_name ? user.first_name : currentProfile.first_name || 'Пользователь';
+                document.getElementById('profileName').textContent = name;
+                document.getElementById('nameInput').value = name;
+
+                // Username
+                if (user && user.username) {
+                    document.getElementById('profileUsername').textContent = '@' + user.username;
+                }
+
+                // Дата рождения
+                if (currentProfile.birthdate) {
+                    document.getElementById('birthdateInput').value = currentProfile.birthdate;
+                }
+
+                // Интересы
+                if (currentProfile.interests) {
+                    document.getElementById('interestsInput').value = currentProfile.interests;
+                }
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                API.showAlert('Не удалось загрузить профиль');
+            }
+        }
+
+        // Сохранить профиль
+        async function saveProfile() {
+            try {
+                const birthdate = document.getElementById('birthdateInput').value;
+                const interests = document.getElementById('interestsInput').value;
+
+                await API.updateProfile({
+                    birthdate: birthdate || null,
+                    interests: interests || null
+                });
+
+                API.showAlert('Профиль сохранён!');
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                API.showAlert('Ошибка при сохранении профиля');
+            }
+        }
+
+        // Поделиться профилем
+        function shareProfile() {
+            const user = API.getTelegramUser();
+            if (user && user.id) {
+                const inviteLink = `https://t.me/wtg_gift_bot?start=invite_${user.id}`;
+                const text = `Привет! Добавь меня в близкие в WTG - What To Gift`;
+
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.openTelegramLink(
+                        `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(text)}`
+                    );
+                }
+            } else {
+                API.showAlert('Не удалось создать ссылку');
+            }
+        }
+
+        // Загрузить wishlist
+        async function loadWishlist() {
+            try {
+                const data = await API.getWishlist();
+                currentWishlist = data.items || [];
+                renderWishlist();
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                document.getElementById('wishlistContainer').innerHTML =
+                    '<div class="empty-wishlist"><div class="empty-wishlist-icon">😔</div><p>Не удалось загрузить вишлист</p></div>';
+            }
+        }
+
+        // Отобразить wishlist
+        function renderWishlist() {
+            const container = document.getElementById('wishlistContainer');
+
+            if (currentWishlist.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-wishlist">
+                        <div class="empty-wishlist-icon">🎁</div>
+                        <p>Вишлист пуст</p>
+                        <small>Добавьте желаемые подарки</small>
+                    </div>
+                `;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'wishlist-grid';
+
+            currentWishlist.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'wishlist-item';
+
+                const imageHtml = item.image_url
+                    ? `<img src="${item.image_url}" alt="${item.title}">`
+                    : '🎁';
+
+                itemEl.innerHTML = `
+                    <div class="wishlist-item-image">${imageHtml}</div>
+                    <div class="wishlist-item-content">
+                        <div class="wishlist-item-title">${escapeHtml(item.title)}</div>
+                        ${item.price ? `<div class="wishlist-item-price">${escapeHtml(item.price)}</div>` : ''}
+                    </div>
+                    <button class="wishlist-item-delete" onclick="deleteWishlistItem(${item.id})">✕</button>
+                `;
+
+                if (item.url) {
+                    itemEl.style.cursor = 'pointer';
+                    itemEl.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('wishlist-item-delete')) {
+                            window.open(item.url, '_blank');
+                        }
+                    });
+                }
+
+                grid.appendChild(itemEl);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+
+        // Удалить товар из wishlist
+        async function deleteWishlistItem(itemId) {
+            API.showConfirm('Удалить подарок из вишлиста?', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await API.deleteWishlistItem(itemId);
+                        await loadWishlist();
+                    } catch (error) {
+                        console.error('Error deleting item:', error);
+                        API.showAlert('Ошибка при удалении');
+                    }
+                }
+            });
+        }
+
+        // Очистить форму подарка
+        function clearGiftForm() {
+            document.getElementById('giftUrlInput').value = '';
+            document.getElementById('giftTitleInput').value = '';
+            document.getElementById('giftDescriptionInput').value = '';
+            document.getElementById('giftPriceInput').value = '';
+            document.getElementById('giftImageInput').value = '';
+        }
+
+        // Сохранить подарок
+        async function saveGift() {
+            const title = document.getElementById('giftTitleInput').value.trim();
+            const url = document.getElementById('giftUrlInput').value.trim();
+            const description = document.getElementById('giftDescriptionInput').value.trim();
+            const price = document.getElementById('giftPriceInput').value.trim();
+            const image_url = document.getElementById('giftImageInput').value.trim();
+
+            if (!title) {
+                API.showAlert('Введите название подарка');
+                return;
+            }
+
+            try {
+                await API.addWishlistItem({
+                    title,
+                    url,
+                    description,
+                    price,
+                    image_url
+                });
+
+                document.getElementById('addGiftModal').classList.remove('active');
+                await loadWishlist();
+            } catch (error) {
+                console.error('Error saving gift:', error);
+                API.showAlert('Ошибка при добавлении подарка');
+            }
+        }
+
+        // Утилиты
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function extractDomainName(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return domain.replace('www.', '');
+            } catch (_) {
+                return 'Товар';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

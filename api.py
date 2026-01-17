@@ -47,6 +47,25 @@ class UpdatePerson(BaseModel):
 class DeletePeople(BaseModel):
     person_db_ids: List[int]
 
+class UpdateProfile(BaseModel):
+    birthdate: Optional[str] = None
+    interests: Optional[str] = None
+
+class WishlistItem(BaseModel):
+    title: str
+    description: Optional[str] = ''
+    price: Optional[str] = ''
+    url: Optional[str] = ''
+    image_url: Optional[str] = ''
+
+class UpdateWishlistItem(BaseModel):
+    item_id: int
+    title: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[str] = None
+    url: Optional[str] = None
+    image_url: Optional[str] = None
+
 # === ПРОВЕРКА TELEGRAM INIT DATA ===
 
 def validate_init_data(init_data: str) -> dict:
@@ -190,6 +209,114 @@ async def accept_invitation(inviter_id: str, authorization: Optional[str] = Head
     )
     
     return {"success": True, "message": "Invitation accepted"}
+
+# === ПРОФИЛЬ ===
+
+@app.get("/api/profile")
+async def get_profile(authorization: Optional[str] = Header(None)):
+    """Получить профиль пользователя"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    # Регистрируем/обновляем пользователя
+    db.add_user(user_id, user.get('username'), user.get('first_name'))
+
+    # Получаем полный профиль
+    profile = db.get_user(user_id)
+
+    return {"profile": profile}
+
+@app.put("/api/profile")
+async def update_profile(update: UpdateProfile, authorization: Optional[str] = Header(None)):
+    """Обновить профиль пользователя"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    # Обновляем профиль
+    db.update_user_profile(
+        user_id,
+        birthdate=update.birthdate,
+        interests=update.interests
+    )
+
+    return {"success": True}
+
+# === WISHLIST ===
+
+@app.get("/api/wishlist")
+async def get_wishlist(authorization: Optional[str] = Header(None)):
+    """Получить wishlist пользователя"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    items = db.get_wishlist(user_id)
+
+    return {"items": items}
+
+@app.post("/api/wishlist")
+async def add_wishlist_item(item: WishlistItem, authorization: Optional[str] = Header(None)):
+    """Добавить товар в wishlist"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    item_id = db.add_wishlist_item(
+        user_id=user_id,
+        title=item.title,
+        description=item.description,
+        price=item.price,
+        url=item.url,
+        image_url=item.image_url
+    )
+
+    return {"success": True, "item_id": item_id}
+
+@app.put("/api/wishlist")
+async def update_wishlist_item(update: UpdateWishlistItem, authorization: Optional[str] = Header(None)):
+    """Обновить товар в wishlist"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+
+    updates = {}
+    if update.title is not None:
+        updates['title'] = update.title
+    if update.description is not None:
+        updates['description'] = update.description
+    if update.price is not None:
+        updates['price'] = update.price
+    if update.url is not None:
+        updates['url'] = update.url
+    if update.image_url is not None:
+        updates['image_url'] = update.image_url
+
+    db.update_wishlist_item(update.item_id, **updates)
+
+    return {"success": True}
+
+@app.delete("/api/wishlist/{item_id}")
+async def delete_wishlist_item(item_id: int, authorization: Optional[str] = Header(None)):
+    """Удалить товар из wishlist"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+
+    db.delete_wishlist_item(item_id)
+
+    return {"success": True}
 
 
 if __name__ == "__main__":

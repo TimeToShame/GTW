@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime
+from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from datetime import datetime
@@ -16,10 +16,12 @@ Base = declarative_base()
 # Модели
 class User(Base):
     __tablename__ = 'users'
-    
+
     user_id = Column(String, primary_key=True)
     username = Column(String)
     first_name = Column(String)
+    birthdate = Column(String)  # Дата рождения в формате YYYY-MM-DD
+    interests = Column(Text)  # Интересы пользователя для AI и друзей
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class ClosePerson(Base):
@@ -38,10 +40,22 @@ class ClosePerson(Base):
 
 class Invitation(Base):
     __tablename__ = 'invitations'
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     inviter_id = Column(String, nullable=False)
     invited_id = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class WishlistItem(Base):
+    __tablename__ = 'wishlist'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, nullable=False)
+    title = Column(String, nullable=False)  # Название подарка
+    description = Column(Text)  # Описание
+    price = Column(String)  # Цена
+    url = Column(String)  # Ссылка на товар
+    image_url = Column(String)  # URL картинки
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # Database класс
@@ -68,13 +82,30 @@ class Database:
         self.Session = scoped_session(session_factory)
     
     def _migrate_add_relation_column(self):
-        """Добавляем колонку relation если её нет"""
+        """Добавляем колонки если их нет"""
         try:
             with self.engine.connect() as conn:
-                conn.execute("ALTER TABLE close_people ADD COLUMN IF NOT EXISTS relation VARCHAR")
+                # Добавляем relation в close_people
+                try:
+                    conn.execute(text("ALTER TABLE close_people ADD COLUMN IF NOT EXISTS relation VARCHAR"))
+                except Exception as e:
+                    print(f"Migration: close_people.relation - {e}")
+
+                # Добавляем birthdate в users
+                try:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS birthdate VARCHAR"))
+                except Exception as e:
+                    print(f"Migration: users.birthdate - {e}")
+
+                # Добавляем interests в users
+                try:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT"))
+                except Exception as e:
+                    print(f"Migration: users.interests - {e}")
+
                 conn.commit()
         except Exception as e:
-            print(f"Migration note: {e}")
+            print(f"Migration general error: {e}")
     
     def get_session(self):
         return self.Session()
@@ -109,9 +140,30 @@ class Database:
                     'user_id': user.user_id,
                     'username': user.username,
                     'first_name': user.first_name,
+                    'birthdate': user.birthdate,
+                    'interests': user.interests,
                     'created_at': user.created_at.isoformat() if user.created_at else None
                 }
             return None
+        finally:
+            session.close()
+
+    def update_user_profile(self, user_id, birthdate=None, interests=None):
+        """Обновить профиль пользователя"""
+        session = self.get_session()
+        try:
+            user = session.query(User).filter_by(user_id=str(user_id)).first()
+            if user:
+                if birthdate is not None:
+                    user.birthdate = birthdate
+                if interests is not None:
+                    user.interests = interests
+                self.safe_commit(session)
+                return True
+            return False
+        except Exception as e:
+            session.rollback()
+            raise e
         finally:
             session.close()
     
@@ -221,7 +273,7 @@ class Database:
                 inviter_id=str(inviter_id),
                 invited_id=str(invited_id)
             ).first()
-            
+
             if invitation:
                 return {
                     'id': invitation.id,
@@ -230,6 +282,78 @@ class Database:
                     'created_at': invitation.created_at.isoformat() if invitation.created_at else None
                 }
             return None
+        finally:
+            session.close()
+
+    # === WISHLIST МЕТОДЫ ===
+
+    def add_wishlist_item(self, user_id, title, description='', price='', url='', image_url=''):
+        """Добавить товар в wishlist"""
+        session = self.get_session()
+        try:
+            item = WishlistItem(
+                user_id=str(user_id),
+                title=title,
+                description=description,
+                price=price,
+                url=url,
+                image_url=image_url
+            )
+            session.add(item)
+            self.safe_commit(session)
+            return item.id
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def get_wishlist(self, user_id):
+        """Получить wishlist пользователя"""
+        session = self.get_session()
+        try:
+            items = session.query(WishlistItem).filter_by(user_id=str(user_id)).order_by(WishlistItem.created_at.desc()).all()
+
+            return [{
+                'id': item.id,
+                'user_id': item.user_id,
+                'title': item.title,
+                'description': item.description,
+                'price': item.price,
+                'url': item.url,
+                'image_url': item.image_url,
+                'created_at': item.created_at.isoformat() if item.created_at else None
+            } for item in items]
+        finally:
+            session.close()
+
+    def update_wishlist_item(self, item_id, **kwargs):
+        """Обновить товар в wishlist"""
+        session = self.get_session()
+        try:
+            item = session.query(WishlistItem).filter_by(id=item_id).first()
+            if item:
+                for key, value in kwargs.items():
+                    if hasattr(item, key):
+                        setattr(item, key, value)
+                self.safe_commit(session)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def delete_wishlist_item(self, item_id):
+        """Удалить товар из wishlist"""
+        session = self.get_session()
+        try:
+            item = session.query(WishlistItem).filter_by(id=item_id).first()
+            if item:
+                session.delete(item)
+                self.safe_commit(session)
+        except Exception as e:
+            session.rollback()
+            raise e
         finally:
             session.close()
 
