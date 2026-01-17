@@ -278,6 +278,16 @@
         });
     }
 
+    // === ПОДБОР ПОДАРКОВ ===
+
+    // Подобрать подарки с помощью AI
+    async function suggestGifts(data) {
+        return apiRequest('/api/suggest-gifts', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
     // Экспортируем API
     window.API = {
         // Данные
@@ -313,6 +323,9 @@
         addPersonalIdea,
         updatePersonalIdea,
         deletePersonalIdea,
+
+        // Подбор подарков
+        suggestGifts,
 
         // Telegram WebApp
         initTelegram,

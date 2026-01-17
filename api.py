@@ -92,6 +92,16 @@ class UpdatePersonalGiftIdea(BaseModel):
     url: Optional[str] = None
     image_url: Optional[str] = None
 
+class GiftSuggestionsRequest(BaseModel):
+    person_name: str
+    person_gender: Optional[str] = ''
+    person_age: Optional[int] = None
+    person_interests: Optional[str] = ''
+    event: Optional[str] = ''
+    budget_from: Optional[str] = ''
+    budget_to: Optional[str] = ''
+    additional_wishes: Optional[str] = ''
+
 # === ПРОВЕРКА TELEGRAM INIT DATA ===
 
 def validate_init_data(init_data: str) -> dict:
@@ -595,6 +605,99 @@ async def delete_personal_idea(idea_id: int, authorization: Optional[str] = Head
     db.delete_personal_gift_idea(idea_id)
 
     return {"success": True}
+
+# === ПОДБОР ПОДАРКОВ С AI ===
+
+@app.post("/api/suggest-gifts")
+async def suggest_gifts(request: GiftSuggestionsRequest, authorization: Optional[str] = Header(None)):
+    """Подбор подарков с помощью AI"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    validate_init_data(authorization)
+
+    # Маппинг событий
+    event_names = {
+        'birthday': 'День рождения',
+        'new_year': 'Новый год',
+        'feb23': '23 февраля',
+        'mar8': '8 марта',
+        'wedding': 'Свадьба',
+        'anniversary': 'Годовщина',
+        'valentines': 'День влюблённых',
+        'just_because': 'Просто так'
+    }
+
+    # Формируем промпт
+    prompt = f"""Ты - эксперт по подбору подарков. Подбери 20 идей подарков.
+
+Информация о получателе:
+- Имя: {request.person_name}
+- Пол: {request.person_gender if request.person_gender == 'm' else 'женский' if request.person_gender == 'f' else 'не указан'}
+- Возраст: {request.person_age or 'не указан'}
+- Интересы: {request.person_interests or 'не указаны'}"""
+
+    if request.event:
+        prompt += f"\n- Событие: {event_names.get(request.event, request.event)}"
+
+    if request.budget_from or request.budget_to:
+        prompt += f"\n- Бюджет: {request.budget_from or '0'} - {request.budget_to or '∞'} рублей"
+
+    if request.additional_wishes:
+        prompt += f"\n- Дополнительные пожелания: {request.additional_wishes}"
+
+    prompt += """
+
+ВАЖНО: Ответ дай СТРОГО в формате JSON массива, без markdown, без пояснений, только JSON:
+[
+  {
+    "name": "Название подарка",
+    "description": "Краткое описание почему это хороший подарок (1-2 предложения)",
+    "price": "примерная цена в рублях (только число)"
+  }
+]
+
+Подбери разнообразные подарки в разных ценовых категориях. Учитывай пол, возраст и интересы."""
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            ai_response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://gtw-lq6s.onrender.com",
+                    "X-Title": "WTG Gift Picker"
+                },
+                json={
+                    "model": "google/gemini-2.0-flash-exp:free",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.8
+                }
+            )
+
+        if not ai_response.is_success:
+            raise HTTPException(status_code=500, detail=f"AI API error: {ai_response.status_code}")
+
+        ai_data = ai_response.json()
+        ai_content = ai_data["choices"][0]["message"]["content"]
+
+        # Парсим ответ
+        cleaned = ai_content.strip()
+        if cleaned.startswith('```json'):
+            cleaned = cleaned[7:]
+        if cleaned.startswith('```'):
+            cleaned = cleaned[3:]
+        if cleaned.endswith('```'):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+
+        gifts = json.loads(cleaned)
+
+        return {"success": True, "gifts": gifts}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating suggestions: {str(e)}")
 
 
 if __name__ == "__main__":

@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/icons.css">
     <style>
+        body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
         .step {
             display: none;
         }
@@ -15,24 +26,87 @@
             display: block;
         }
 
-        .person-select {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            background-color: var(--bg-secondary);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            color: var(--text-primary);
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
         }
 
-        .person-select:focus {
-            outline: none;
+        .person-card {
+            background: var(--gradient-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .person-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,149,0,0.15), transparent);
+            transition: left 0.5s;
+        }
+
+        .person-card:hover::before {
+            left: 100%;
+        }
+
+        .person-card:hover {
             border-color: var(--accent);
+            background: var(--gradient-hover);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 149, 0, 0.3),
+                        0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .person-card.selected {
+            border-color: var(--accent);
+            background: var(--gradient-primary);
+            box-shadow: 0 0 20px rgba(255, 149, 0, 0.5),
+                        0 0 40px rgba(255, 149, 0, 0.3);
+        }
+
+        .person-card.selected .person-card-name {
+            color: #000;
+            font-weight: 700;
+        }
+
+        .person-card-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .person-card.selected .person-card-avatar {
+            box-shadow: 0 0 15px rgba(255, 149, 0, 0.6);
+        }
+
+        .person-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .person-card-age {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
         .person-info {
@@ -79,21 +153,42 @@
             color: var(--text-primary);
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,149,0,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .event-btn:hover::before {
+            left: 100%;
         }
 
         .event-btn:hover {
             border-color: var(--accent);
             background: var(--gradient-hover);
-            transform: translateY(-2px);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 149, 0, 0.3),
+                        0 6px 20px rgba(0, 0, 0, 0.2);
         }
 
         .event-btn.active {
             border-color: var(--accent);
             background: var(--gradient-primary);
             color: #000;
-            box-shadow: var(--glow-orange);
+            box-shadow: 0 0 20px rgba(255, 149, 0, 0.5),
+                        0 0 40px rgba(255, 149, 0, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
         }
 
         .budget-inputs {
@@ -155,19 +250,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: bounce 1s infinite;
+            animation: bounce-glow 1s infinite;
         }
 
         .loading-icon svg {
             width: 64px;
             height: 64px;
             color: var(--accent);
-            filter: drop-shadow(var(--glow-orange));
+            filter: drop-shadow(0 0 10px var(--accent));
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-10px) scale(1.1); }
+        @keyframes bounce-glow {
+            0%, 100% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                filter: drop-shadow(0 0 15px rgba(255, 149, 0, 0.4));
+            }
+            25% {
+                transform: translateY(-5px) scale(1.05) rotate(-5deg);
+            }
+            50% {
+                transform: translateY(-15px) scale(1.15) rotate(0deg);
+                filter: drop-shadow(0 0 30px rgba(255, 149, 0, 0.7));
+            }
+            75% {
+                transform: translateY(-5px) scale(1.05) rotate(5deg);
+            }
         }
 
         .loading-text {
@@ -197,17 +304,43 @@
 
         .gift-item {
             background: var(--gradient-card);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 16px;
             padding: 18px;
             margin-bottom: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gift-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 149, 0, 0.15) 50%,
+                transparent 100%
+            );
+            transition: left 0.6s;
+            pointer-events: none;
+        }
+
+        .gift-item:hover::before {
+            left: 100%;
         }
 
         .gift-item:hover {
             background: var(--gradient-hover);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), var(--glow-orange);
-            transform: translateX(4px);
+            box-shadow: 0 0 20px rgba(255, 149, 0, 0.4),
+                        0 0 40px rgba(255, 149, 0, 0.2),
+                        0 8px 24px rgba(0, 0, 0, 0.2);
+            transform: translateX(8px) scale(1.02);
+            border-color: var(--accent);
         }
 
         .gift-item-header {
@@ -324,6 +457,20 @@
     </style>
 </head>
 <body>
+    <!-- Floating Particles Background -->
+    <div class="particle-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-left">
@@ -340,10 +487,10 @@
             <!-- Step 1: Choose Person -->
             <div class="step active" id="step1">
                 <h2 class="mb-16">Кому подбираем подарок?</h2>
-                
-                <select class="person-select" id="personSelect">
-                    <option value="">Выберите человека...</option>
-                </select>
+
+                <div class="people-grid" id="peopleGrid">
+                    <!-- Карточки людей будут добавлены через JS -->
+                </div>
 
                 <div class="person-info" id="personInfo" style="display: none;">
                     <div class="person-info-row">
@@ -383,6 +530,11 @@
                 <h2 class="mb-8">Детали подарка</h2>
                 <p class="text-secondary mb-16" style="font-size: 14px;">Для кого: <strong id="selectedPersonName"></strong></p>
 
+                <div id="personInterestsBlock" style="display: none; background: var(--gradient-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Интересы:</div>
+                    <div id="personInterestsText" style="font-size: 14px; color: var(--text-primary);"></div>
+                </div>
+
                 <h3 class="mb-8">Событие</h3>
                 <div class="event-grid">
                     <button class="event-btn" data-event="birthday">🎂 День рождения</button>
@@ -397,9 +549,9 @@
 
                 <h3 class="mt-24 mb-8">Бюджет (₽)</h3>
                 <div class="budget-inputs">
-                    <input type="number" class="budget-input" id="budgetFrom" placeholder="От" min="0">
+                    <input type="number" class="budget-input" id="budgetFrom" placeholder="От" min="0" inputmode="numeric" pattern="[0-9]*">
                     <span class="budget-separator">—</span>
-                    <input type="number" class="budget-input" id="budgetTo" placeholder="До" min="0">
+                    <input type="number" class="budget-input" id="budgetTo" placeholder="До" min="0" inputmode="numeric" pattern="[0-9]*">
                 </div>
 
                 <h3 class="mt-24 mb-8">Дополнительные пожелания</h3>
@@ -496,46 +648,83 @@
             try {
                 const data = await API.getClosePeople();
                 closePeople = data.people || [];
-                
-                const select = document.getElementById('personSelect');
+
+                const grid = document.getElementById('peopleGrid');
+                grid.innerHTML = '';
+
                 closePeople.forEach(person => {
-                    const option = document.createElement('option');
-                    option.value = person.id;
-                    option.textContent = person.name;
-                    select.appendChild(option);
+                    const card = document.createElement('div');
+                    card.className = 'person-card';
+                    card.dataset.personId = person.id;
+
+                    const avatar = person.avatar || getDefaultAvatar(person.gender);
+
+                    card.innerHTML = `
+                        <div class="person-card-avatar">${avatar}</div>
+                        <div class="person-card-name">${escapeHtml(person.name)}</div>
+                        <div class="person-card-age">${person.age ? person.age + ' лет' : ''}</div>
+                    `;
+
+                    card.addEventListener('click', () => selectPerson(person.id));
+                    grid.appendChild(card);
                 });
             } catch (error) {
                 console.error('Error loading close people:', error);
             }
         }
 
-        function setupEventListeners() {
-            // Person select
-            document.getElementById('personSelect').addEventListener('change', function() {
-                const personId = parseInt(this.value);
-                selectedPerson = closePeople.find(p => p.id === personId) || null;
-                
-                const personInfo = document.getElementById('personInfo');
-                const toStep2Btn = document.getElementById('toStep2');
-                
-                if (selectedPerson) {
-                    personInfo.style.display = 'block';
-                    document.getElementById('infoName').textContent = selectedPerson.name || '—';
-                    document.getElementById('infoGender').textContent = 
-                        selectedPerson.gender === 'm' ? 'Мужской' : 
-                        selectedPerson.gender === 'f' ? 'Женский' : '—';
-                    document.getElementById('infoAge').textContent = selectedPerson.age || '—';
-                    document.getElementById('infoInterests').textContent = selectedPerson.interests || '—';
-                    toStep2Btn.disabled = false;
+        function getDefaultAvatar(gender) {
+            if (gender === 'm') return '👨';
+            if (gender === 'f') return '👩';
+            return '👤';
+        }
+
+        function selectPerson(personId) {
+            selectedPerson = closePeople.find(p => p.id === personId) || null;
+
+            // Обновить визуальный выбор карточек
+            document.querySelectorAll('.person-card').forEach(card => {
+                if (parseInt(card.dataset.personId) === personId) {
+                    card.classList.add('selected');
                 } else {
-                    personInfo.style.display = 'none';
-                    toStep2Btn.disabled = true;
+                    card.classList.remove('selected');
                 }
             });
+
+            const personInfo = document.getElementById('personInfo');
+            const toStep2Btn = document.getElementById('toStep2');
+
+            if (selectedPerson) {
+                personInfo.style.display = 'block';
+                document.getElementById('infoName').textContent = selectedPerson.name || '—';
+                document.getElementById('infoGender').textContent =
+                    selectedPerson.gender === 'm' ? 'Мужской' :
+                    selectedPerson.gender === 'f' ? 'Женский' : '—';
+                document.getElementById('infoAge').textContent = selectedPerson.age || '—';
+                document.getElementById('infoInterests').textContent = selectedPerson.interests || '—';
+                toStep2Btn.disabled = false;
+            } else {
+                personInfo.style.display = 'none';
+                toStep2Btn.disabled = true;
+            }
+        }
+
+        function setupEventListeners() {
 
             // Step navigation
             document.getElementById('toStep2').addEventListener('click', () => {
                 document.getElementById('selectedPersonName').textContent = selectedPerson.name;
+
+                // Показываем интересы если есть
+                const interestsBlock = document.getElementById('personInterestsBlock');
+                const interestsText = document.getElementById('personInterestsText');
+                if (selectedPerson.interests && selectedPerson.interests.trim()) {
+                    interestsText.textContent = selectedPerson.interests;
+                    interestsBlock.style.display = 'block';
+                } else {
+                    interestsBlock.style.display = 'none';
+                }
+
                 showStep('step2');
             });
 
@@ -544,7 +733,7 @@
             document.getElementById('newSearch').addEventListener('click', () => {
                 selectedPerson = null;
                 selectedEvent = '';
-                document.getElementById('personSelect').value = '';
+                document.querySelectorAll('.person-card').forEach(card => card.classList.remove('selected'));
                 document.getElementById('personInfo').style.display = 'none';
                 document.getElementById('toStep2').disabled = true;
                 document.querySelectorAll('.event-btn').forEach(btn => btn.classList.remove('active'));
@@ -580,111 +769,30 @@
             const budgetTo = document.getElementById('budgetTo').value;
             const wishes = document.getElementById('wishes').value;
 
-            // Build prompt
-            const prompt = buildPrompt(selectedPerson, selectedEvent, budgetFrom, budgetTo, wishes);
-
             try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + getOpenRouterKey(),
-                        'HTTP-Referer': window.location.href,
-                        'X-Title': 'WTG Gift Picker'
-                    },
-                    body: JSON.stringify({
-                        model: 'google/gemini-2.0-flash-exp:free',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: prompt
-                            }
-                        ],
-                        temperature: 0.8
-                    })
+                const response = await API.suggestGifts({
+                    person_name: selectedPerson.name,
+                    person_gender: selectedPerson.gender || '',
+                    person_age: selectedPerson.age || null,
+                    person_interests: selectedPerson.interests || '',
+                    event: selectedEvent || '',
+                    budget_from: budgetFrom || '',
+                    budget_to: budgetTo || '',
+                    additional_wishes: wishes || ''
                 });
 
-                if (!response.ok) {
-                    throw new Error('API request failed');
+                if (response.success && response.gifts) {
+                    gifts = response.gifts;
+                    displayGifts(gifts);
+                    showStep('step4');
+                } else {
+                    throw new Error('Invalid response from API');
                 }
-
-                const data = await response.json();
-                const content = data.choices[0].message.content;
-                
-                gifts = parseGifts(content);
-                displayGifts(gifts);
-                showStep('step4');
 
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('errorText').textContent = 'Не удалось подобрать подарки: ' + error.message;
                 showStep('stepError');
-            }
-        }
-
-        function getOpenRouterKey() {
-            // Ключ будет передаваться через API бэкенда в проде
-            // Пока используем напрямую для теста
-            return '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';
-        }
-
-        function buildPrompt(person, event, budgetFrom, budgetTo, wishes) {
-            let prompt = `Ты - эксперт по подбору подарков. Подбери 20 идей подарков.
-
-Информация о получателе:
-- Имя: ${person.name}
-- Пол: ${person.gender === 'm' ? 'мужской' : person.gender === 'f' ? 'женский' : 'не указан'}
-- Возраст: ${person.age || 'не указан'}
-- Интересы: ${person.interests || 'не указаны'}`;
-
-            if (event) {
-                prompt += `\n- Событие: ${eventNames[event]}`;
-            }
-
-            if (budgetFrom || budgetTo) {
-                prompt += `\n- Бюджет: ${budgetFrom || '0'} - ${budgetTo || '∞'} рублей`;
-            }
-
-            if (wishes) {
-                prompt += `\n- Дополнительные пожелания: ${wishes}`;
-            }
-
-            prompt += `
-
-ВАЖНО: Ответ дай СТРОГО в формате JSON массива, без markdown, без пояснений, только JSON:
-[
-  {
-    "name": "Название подарка",
-    "description": "Краткое описание почему это хороший подарок (1-2 предложения)",
-    "price": "примерная цена в рублях (только число)"
-  }
-]
-
-Подбери разнообразные подарки в разных ценовых категориях. Учитывай пол, возраст и интересы.`;
-
-            return prompt;
-        }
-
-        function parseGifts(content) {
-            try {
-                // Удаляем возможные markdown обёртки
-                let cleaned = content.trim();
-                if (cleaned.startsWith('```json')) {
-                    cleaned = cleaned.slice(7);
-                }
-                if (cleaned.startsWith('```')) {
-                    cleaned = cleaned.slice(3);
-                }
-                if (cleaned.endsWith('```')) {
-                    cleaned = cleaned.slice(0, -3);
-                }
-                cleaned = cleaned.trim();
-
-                return JSON.parse(cleaned);
-            } catch (error) {
-                console.error('Parse error:', error);
-                console.log('Raw content:', content);
-                return [];
             }
         }
 
