@@ -204,12 +204,25 @@ async def delete_close_people(delete: DeletePeople, authorization: Optional[str]
     """Удалить близких людей"""
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization required")
-    
+
     user = validate_init_data(authorization)
-    
+
     db.delete_close_people(delete.person_db_ids)
-    
+
     return {"success": True}
+
+@app.post("/api/close-people/remove-duplicates")
+async def remove_duplicate_close_people(authorization: Optional[str] = Header(None)):
+    """Удалить дубликаты близких людей"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    removed_count = db.remove_duplicate_close_people(user_id)
+
+    return {"success": True, "removed_count": removed_count}
 
 @app.post("/api/invitation/{inviter_id}")
 async def accept_invitation(inviter_id: str, authorization: Optional[str] = Header(None)):

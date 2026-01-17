@@ -201,6 +201,17 @@ class Database:
     def add_close_person(self, owner_id, name, person_id=None, relation='', gender='', birthdate='', interests='', age=None):
         session = self.get_session()
         try:
+            # Проверяем, есть ли уже такой человек у владельца
+            if person_id:
+                existing = session.query(ClosePerson).filter_by(
+                    owner_id=str(owner_id),
+                    person_id=str(person_id)
+                ).first()
+
+                # Если уже есть - не добавляем дубликат, возвращаем существующий ID
+                if existing:
+                    return existing.id
+
             person = ClosePerson(
                 owner_id=str(owner_id),
                 person_id=str(person_id) if person_id else None,
@@ -295,7 +306,39 @@ class Database:
             raise e
         finally:
             session.close()
-    
+
+    def remove_duplicate_close_people(self, owner_id):
+        """Удалить дубликаты близких людей (оставить только первую запись для каждого person_id)"""
+        session = self.get_session()
+        try:
+            # Получаем всех близких с person_id
+            people = session.query(ClosePerson).filter_by(owner_id=str(owner_id)).filter(
+                ClosePerson.person_id.isnot(None)
+            ).order_by(ClosePerson.created_at).all()
+
+            seen_person_ids = set()
+            duplicates_to_delete = []
+
+            for p in people:
+                if p.person_id in seen_person_ids:
+                    # Это дубликат
+                    duplicates_to_delete.append(p.id)
+                else:
+                    # Первая запись для этого person_id
+                    seen_person_ids.add(p.person_id)
+
+            # Удаляем дубликаты
+            if duplicates_to_delete:
+                session.query(ClosePerson).filter(ClosePerson.id.in_(duplicates_to_delete)).delete(synchronize_session=False)
+                self.safe_commit(session)
+
+            return len(duplicates_to_delete)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
     def add_invitation(self, inviter_id, invited_id):
         session = self.get_session()
         try:
