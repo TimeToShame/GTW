@@ -13,11 +13,12 @@
             text-align: center;
             padding: 32px 16px;
             background: var(--gradient-card);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 20px;
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .profile-header::before {
@@ -27,8 +28,31 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(145deg, rgba(255,149,0,0.05) 0%, transparent 100%);
+            background: linear-gradient(145deg, rgba(255,149,0,0.1) 0%, transparent 100%);
             pointer-events: none;
+            animation: shimmer-shine 4s infinite;
+        }
+
+        .profile-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 149, 0, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .profile-header:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(255, 149, 0, 0.3);
+        }
+
+        .profile-header:hover::after {
+            opacity: 1;
         }
 
         .profile-avatar {
@@ -38,7 +62,8 @@
             margin: 0 auto 16px;
             background: var(--gradient-primary);
             border: 3px solid var(--accent);
-            box-shadow: var(--glow-orange);
+            box-shadow: 0 0 20px rgba(255, 149, 0, 0.5),
+                        0 0 40px rgba(255, 149, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -46,6 +71,14 @@
             color: #000;
             position: relative;
             z-index: 1;
+            animation: pulse-glow 3s ease-in-out infinite;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-header:hover .profile-avatar {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px rgba(255, 149, 0, 0.7),
+                        0 0 60px rgba(255, 149, 0, 0.4);
         }
 
         .profile-avatar img {
@@ -115,18 +148,42 @@
 
         .wishlist-item {
             background: var(--gradient-card);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 16px;
             overflow: hidden;
             position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wishlist-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                transparent 0%,
+                rgba(255, 149, 0, 0.1) 50%,
+                transparent 100%
+            );
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
         }
 
         .wishlist-item:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px) scale(1.03);
             background: var(--gradient-hover);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), var(--glow-orange);
+            box-shadow: 0 0 25px rgba(255, 149, 0, 0.5),
+                        0 0 50px rgba(255, 149, 0, 0.3),
+                        0 12px 30px rgba(0, 0, 0, 0.3);
             border-color: var(--accent);
+        }
+
+        .wishlist-item:hover::after {
+            opacity: 1;
         }
 
         .wishlist-item-image {
@@ -271,6 +328,20 @@
     </style>
 </head>
 <body>
+    <!-- Floating Particles Background -->
+    <div class="particle-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <button class="menu-btn" id="backBtn">←</button>

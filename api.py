@@ -433,7 +433,7 @@ HTML (фрагмент):
                     "X-Title": "WTG URL Parser"
                 },
                 json={
-                    "model": "google/gemini-2.0-flash-exp:free",
+                    "model": "meta-llama/llama-3.1-8b-instruct:free",
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.3
                 }
@@ -660,6 +660,10 @@ async def suggest_gifts(request: GiftSuggestionsRequest, authorization: Optional
 Подбери разнообразные подарки в разных ценовых категориях. Учитывай пол, возраст и интересы."""
 
     try:
+        # Проверяем наличие ключа
+        if not OPENROUTER_API_KEY:
+            raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured")
+
         async with httpx.AsyncClient(timeout=60.0) as client:
             ai_response = await client.post(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -670,14 +674,15 @@ async def suggest_gifts(request: GiftSuggestionsRequest, authorization: Optional
                     "X-Title": "WTG Gift Picker"
                 },
                 json={
-                    "model": "google/gemini-2.0-flash-exp:free",
+                    "model": "meta-llama/llama-3.1-8b-instruct:free",
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.8
                 }
             )
 
         if not ai_response.is_success:
-            raise HTTPException(status_code=500, detail=f"AI API error: {ai_response.status_code}")
+            error_detail = ai_response.text
+            raise HTTPException(status_code=500, detail=f"AI API error: {ai_response.status_code} - {error_detail}")
 
         ai_data = ai_response.json()
         ai_content = ai_data["choices"][0]["message"]["content"]
