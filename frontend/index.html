@@ -6,70 +6,140 @@
     <title>WTG - What To Gift</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/icons.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <button class="menu-btn" id="menuBtn">☰</button>
-            <h1 class="header-title">What To Gift</h1>
+            <button class="menu-btn header-icon" id="menuBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <h1 class="header-title gradient-text">What To Gift</h1>
         </div>
-        <a href="profile.html" class="profile-icon" id="profileIcon">👤</a>
+        <a href="profile.html" class="profile-icon avatar-icon" id="profileIcon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </a>
     </header>
 
     <!-- Main Content -->
     <main class="main">
         <div class="container">
             <!-- Welcome Section -->
-            <div class="card">
-                <h2 class="card-title">👋 Добро пожаловать, <span id="userName">Гость</span>!</h2>
-                <p class="card-text">Найди идеальный подарок для своих близких</p>
+            <div class="glass-card fade-in-up">
+                <div class="icon-card floating">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 21H4C3.46957 21 2.96086 20.7893 2.58579 20.4142C2.21071 20.0391 2 19.5304 2 19V17C2 16.4696 2.21071 15.9609 2.58579 15.5858C2.96086 15.2107 3.46957 15 4 15H20C20.5304 15 21.0391 15.2107 21.4142 15.5858C21.7893 15.9609 22 16.4696 22 17V19C22 19.5304 21.7893 20.0391 21.4142 20.4142C21.0391 20.7893 20.5304 21 20 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M7 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h2 class="card-title" style="margin-bottom: 8px;">Привет, <span id="userName" class="gradient-text">Гость</span>!</h2>
+                <p class="card-text">Найди идеальный подарок для своих близких с помощью AI</p>
             </div>
 
             <!-- Quick Actions -->
-            <h3 class="mb-16 mt-24">Быстрые действия</h3>
-            
-            <a href="gift-picker.html" class="list-item">
-                <div class="list-item-avatar">🎁</div>
-                <div class="list-item-content">
-                    <div class="list-item-title">Подобрать подарок</div>
+            <h3 class="mb-16 mt-24" style="color: var(--text-secondary); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Быстрые действия</h3>
+
+            <a href="gift-picker.html" class="glass-card clickable stagger-item" style="margin-bottom: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit;">
+                <div class="icon-card" style="margin: 0;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 12V21H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 7H2V12H22V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 21V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div class="list-item-title" style="font-weight: 600; margin-bottom: 4px;">Подобрать подарок</div>
                     <div class="list-item-subtitle">AI поможет найти идеальный подарок</div>
                 </div>
-                <span class="list-item-arrow">→</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent);">
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </a>
 
-            <a href="friends.html" class="list-item">
-                <div class="list-item-avatar">👥</div>
-                <div class="list-item-content">
-                    <div class="list-item-title">Мои близкие</div>
+            <a href="friends.html" class="glass-card clickable stagger-item" style="margin-bottom: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit;">
+                <div class="icon-card" style="margin: 0;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div class="list-item-title" style="font-weight: 600; margin-bottom: 4px;">Мои близкие</div>
                     <div class="list-item-subtitle" id="friendsCount">Загрузка...</div>
                 </div>
-                <span class="list-item-arrow">→</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent);">
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </a>
 
-            <a href="wishlist.html" class="list-item">
-                <div class="list-item-avatar">⭐</div>
-                <div class="list-item-content">
-                    <div class="list-item-title">Мой вишлист</div>
+            <a href="wishlist.html" class="glass-card clickable stagger-item" style="margin-bottom: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit;">
+                <div class="icon-card" style="margin: 0;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div class="list-item-title" style="font-weight: 600; margin-bottom: 4px;">Мой вишлист</div>
                     <div class="list-item-subtitle">Список моих желаний</div>
                 </div>
-                <span class="list-item-arrow">→</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent);">
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </a>
 
-            <a href="profile.html" class="list-item">
-                <div class="list-item-avatar">👤</div>
-                <div class="list-item-content">
-                    <div class="list-item-title">Мой профиль</div>
+            <a href="profile.html" class="glass-card clickable stagger-item" style="margin-bottom: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit;">
+                <div class="icon-card" style="margin: 0;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div class="list-item-title" style="font-weight: 600; margin-bottom: 4px;">Мой профиль</div>
                     <div class="list-item-subtitle">Настройки и информация</div>
                 </div>
-                <span class="list-item-arrow">→</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent);">
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </a>
 
             <!-- Invite Section -->
-            <div class="card mt-24">
-                <h3 class="card-title">📨 Пригласи друга</h3>
+            <div class="glass-card mt-24 neon-border">
+                <div class="icon-card">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8.59 13.51L15.42 17.49" stroke="currentColor" stroke-width="2"/>
+                        <path d="M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Пригласи друга</h3>
                 <p class="card-text mb-16">Поделись ссылкой и друг появится в твоём списке близких</p>
-                <button class="btn btn-primary btn-block" id="inviteBtn">
+                <button class="btn-modern btn-block" id="inviteBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                        <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8.59 13.51L15.42 17.49" stroke="currentColor" stroke-width="2"/>
+                        <path d="M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="2"/>
+                    </svg>
                     Отправить приглашение
                 </button>
             </div>
