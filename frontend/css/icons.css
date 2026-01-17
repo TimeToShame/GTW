@@ -1,0 +1,277 @@
+/* ===== ICON SYSTEM 2026 ===== */
+
+/* Base icon styles */
+svg[class^="icon-"],
+svg[class*=" icon-"] {
+    display: inline-block;
+    vertical-align: middle;
+    color: currentColor;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icon sizes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xl {
+    width: 48px;
+    height: 48px;
+}
+
+/* Icon with gradient */
+.icon-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glowing icon effect */
+.icon-glow {
+    filter: drop-shadow(var(--glow-orange));
+}
+
+.icon-glow:hover {
+    filter: drop-shadow(var(--glow-strong));
+}
+
+/* Rotating animation */
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.icon-rotate {
+    animation: rotate 2s linear infinite;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.icon-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Icon in button */
+.btn svg {
+    margin-right: 8px;
+}
+
+/* Icon-only button */
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+}
+
+.btn-icon svg {
+    margin: 0;
+}
+
+/* Icon card - для красивых иконок в карточках */
+.icon-card {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-card:hover {
+    background: var(--gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-orange);
+}
+
+.icon-card svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent);
+}
+
+/* Avatar icon wrapper */
+.avatar-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient-card);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.avatar-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+}
+
+.avatar-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Badge icon */
+.badge-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+}
+
+.badge-icon svg {
+    width: 12px;
+    height: 12px;
+    color: #000;
+}
+
+/* Gender icons specific styles */
+.icon-male {
+    color: #4A90E2;
+}
+
+.icon-female {
+    color: #E24A90;
+}
+
+/* Status indicators with icons */
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.status-icon.success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4CAF50;
+}
+
+.status-icon.warning {
+    background: rgba(255, 149, 0, 0.1);
+    color: var(--accent);
+}
+
+.status-icon.error {
+    background: rgba(244, 67, 54, 0.1);
+    color: #F44336;
+}
+
+/* Icon list items */
+.icon-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.icon-list-item:hover {
+    background: var(--gradient-card);
+}
+
+.icon-list-item svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Floating action button with icon */
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    border: none;
+    box-shadow: 0 4px 20px rgba(255, 149, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow: var(--glow-strong);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+.fab svg {
+    width: 24px;
+    height: 24px;
+    color: #000;
+}
+
+/* Icon in header */
+.header-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 2px solid var(--accent);
+    transition: all 0.2s;
+}
+
+.header-icon:hover {
+    background: var(--gradient-card);
+    transform: translateY(-1px);
+}
+
+.header-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent);
+}
