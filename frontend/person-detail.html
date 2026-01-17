@@ -199,7 +199,7 @@
             <button class="menu-btn" id="backBtn">←</button>
             <h1 class="header-title">Профиль</h1>
         </div>
-        <a href="profile.html" class="profile-icon">👤</a>
+        <button class="menu-btn" id="deletePersonBtn" style="background: #e53935; border-color: #e53935; color: white;">🗑</button>
     </header>
 
     <main class="main">
@@ -290,6 +290,9 @@
             document.getElementById('backBtn').addEventListener('click', () => {
                 window.location.href = 'friends.html';
             });
+
+            // Кнопка удаления
+            document.getElementById('deletePersonBtn').addEventListener('click', handleDeletePerson);
 
             // Переключение вкладок
             document.querySelectorAll('.tab').forEach(tab => {
@@ -589,6 +592,23 @@
                         API.showAlert('Идея удалена');
                         closeModal();
                         await loadPersonalIdeas();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        API.showAlert('Не удалось удалить');
+                    }
+                }
+            });
+        }
+
+        async function handleDeletePerson() {
+            if (!currentPerson) return;
+
+            API.showConfirm(`Удалить ${currentPerson.name} из близких?`, async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await API.deleteClosePeople([currentPerson.id]);
+                        API.showAlert('Удалено из близких');
+                        window.location.href = 'friends.html';
                     } catch (error) {
                         console.error('Delete error:', error);
                         API.showAlert('Не удалось удалить');
