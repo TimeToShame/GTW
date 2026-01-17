@@ -58,6 +58,27 @@ class WishlistItem(Base):
     image_url = Column(String)  # URL картинки
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class GiftBooking(Base):
+    __tablename__ = 'gift_bookings'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    item_id = Column(Integer, nullable=False)  # ID товара из wishlist
+    booked_by = Column(String, nullable=False)  # User ID кто забронировал
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PersonalGiftIdea(Base):
+    __tablename__ = 'personal_gift_ideas'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    owner_id = Column(String, nullable=False)  # User ID кто создал идею
+    for_person_id = Column(String, nullable=False)  # Для кого эта идея (person_id из close_people)
+    title = Column(String, nullable=False)  # Название подарка
+    description = Column(Text)  # Описание
+    price = Column(String)  # Цена
+    url = Column(String)  # Ссылка на товар
+    image_url = Column(String)  # URL картинки
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 # Database класс
 class Database:
     def __init__(self):
@@ -350,6 +371,192 @@ class Database:
             item = session.query(WishlistItem).filter_by(id=item_id).first()
             if item:
                 session.delete(item)
+                self.safe_commit(session)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    # === БРОНИРОВАНИЕ ПОДАРКОВ ===
+
+    def book_gift(self, item_id, booked_by):
+        """Забронировать подарок"""
+        session = self.get_session()
+        try:
+            # Проверяем, не забронирован ли уже
+            existing = session.query(GiftBooking).filter_by(item_id=item_id).first()
+            if existing:
+                return None  # Уже забронирован
+
+            booking = GiftBooking(item_id=item_id, booked_by=str(booked_by))
+            session.add(booking)
+            self.safe_commit(session)
+            return booking.id
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def unbook_gift(self, item_id, booked_by):
+        """Отменить бронирование подарка"""
+        session = self.get_session()
+        try:
+            booking = session.query(GiftBooking).filter_by(
+                item_id=item_id,
+                booked_by=str(booked_by)
+            ).first()
+            if booking:
+                session.delete(booking)
+                self.safe_commit(session)
+                return True
+            return False
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def get_wishlist_with_bookings(self, user_id, viewer_id):
+        """Получить wishlist с информацией о бронированиях
+
+        Args:
+            user_id: ID владельца wishlist
+            viewer_id: ID того, кто смотрит wishlist
+
+        Returns:
+            Список товаров с полями:
+            - Если viewer_id == user_id: показываем счётчик забронированных
+            - Если viewer_id != user_id: скрываем забронированные другими
+        """
+        session = self.get_session()
+        try:
+            items = session.query(WishlistItem).filter_by(user_id=str(user_id)).order_by(WishlistItem.created_at.desc()).all()
+
+            result = []
+            for item in items:
+                booking = session.query(GiftBooking).filter_by(item_id=item.id).first()
+
+                # Если смотрит владелец
+                if str(viewer_id) == str(user_id):
+                    result.append({
+                        'id': item.id,
+                        'user_id': item.user_id,
+                        'title': item.title,
+                        'description': item.description,
+                        'price': item.price,
+                        'url': item.url,
+                        'image_url': item.image_url,
+                        'created_at': item.created_at.isoformat() if item.created_at else None,
+                        'is_booked': booking is not None,
+                        'is_owner': True
+                    })
+                # Если смотрит другой пользователь
+                else:
+                    # Скрываем забронированные другими
+                    if booking and booking.booked_by != str(viewer_id):
+                        continue
+
+                    result.append({
+                        'id': item.id,
+                        'user_id': item.user_id,
+                        'title': item.title,
+                        'description': item.description,
+                        'price': item.price,
+                        'url': item.url,
+                        'image_url': item.image_url,
+                        'created_at': item.created_at.isoformat() if item.created_at else None,
+                        'is_booked': booking is not None and booking.booked_by == str(viewer_id),
+                        'is_owner': False
+                    })
+
+            return result
+        finally:
+            session.close()
+
+    def get_booked_count(self, user_id):
+        """Получить количество забронированных подарков для пользователя"""
+        session = self.get_session()
+        try:
+            items = session.query(WishlistItem).filter_by(user_id=str(user_id)).all()
+            item_ids = [item.id for item in items]
+
+            count = session.query(GiftBooking).filter(GiftBooking.item_id.in_(item_ids)).count()
+            return count
+        finally:
+            session.close()
+
+    # === ЛИЧНЫЕ ИДЕИ ПОДАРКОВ ===
+
+    def add_personal_gift_idea(self, owner_id, for_person_id, title, description='', price='', url='', image_url=''):
+        """Добавить личную идею подарка для близкого человека"""
+        session = self.get_session()
+        try:
+            idea = PersonalGiftIdea(
+                owner_id=str(owner_id),
+                for_person_id=str(for_person_id),
+                title=title,
+                description=description,
+                price=price,
+                url=url,
+                image_url=image_url
+            )
+            session.add(idea)
+            self.safe_commit(session)
+            return idea.id
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def get_personal_gift_ideas(self, owner_id, for_person_id):
+        """Получить личные идеи подарков для конкретного близкого"""
+        session = self.get_session()
+        try:
+            ideas = session.query(PersonalGiftIdea).filter_by(
+                owner_id=str(owner_id),
+                for_person_id=str(for_person_id)
+            ).order_by(PersonalGiftIdea.created_at.desc()).all()
+
+            return [{
+                'id': idea.id,
+                'owner_id': idea.owner_id,
+                'for_person_id': idea.for_person_id,
+                'title': idea.title,
+                'description': idea.description,
+                'price': idea.price,
+                'url': idea.url,
+                'image_url': idea.image_url,
+                'created_at': idea.created_at.isoformat() if idea.created_at else None
+            } for idea in ideas]
+        finally:
+            session.close()
+
+    def update_personal_gift_idea(self, idea_id, **kwargs):
+        """Обновить личную идею подарка"""
+        session = self.get_session()
+        try:
+            idea = session.query(PersonalGiftIdea).filter_by(id=idea_id).first()
+            if idea:
+                for key, value in kwargs.items():
+                    if hasattr(idea, key):
+                        setattr(idea, key, value)
+                self.safe_commit(session)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def delete_personal_gift_idea(self, idea_id):
+        """Удалить личную идею подарка"""
+        session = self.get_session()
+        try:
+            idea = session.query(PersonalGiftIdea).filter_by(id=idea_id).first()
+            if idea:
+                session.delete(idea)
                 self.safe_commit(session)
         except Exception as e:
             session.rollback()

@@ -221,6 +221,63 @@
         }
     }
 
+    // === WISHLIST БЛИЗКИХ И БРОНИРОВАНИЕ ===
+
+    // Получить wishlist близкого
+    async function getPersonWishlist(personId) {
+        return apiRequest(`/api/person/${personId}/wishlist`);
+    }
+
+    // Забронировать подарок
+    async function bookGift(itemId) {
+        return apiRequest('/api/book-gift', {
+            method: 'POST',
+            body: JSON.stringify({ item_id: itemId })
+        });
+    }
+
+    // Отменить бронирование
+    async function unbookGift(itemId) {
+        return apiRequest(`/api/book-gift/${itemId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Получить количество забронированных подарков
+    async function getBookedCount() {
+        return apiRequest('/api/booked-count');
+    }
+
+    // === ЛИЧНЫЕ ИДЕИ ПОДАРКОВ ===
+
+    // Получить мои идеи для близкого
+    async function getPersonalIdeas(forPersonId) {
+        return apiRequest(`/api/personal-ideas/${forPersonId}`);
+    }
+
+    // Добавить личную идею подарка
+    async function addPersonalIdea(data) {
+        return apiRequest('/api/personal-ideas', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Обновить личную идею
+    async function updatePersonalIdea(data) {
+        return apiRequest('/api/personal-ideas', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Удалить личную идею
+    async function deletePersonalIdea(ideaId) {
+        return apiRequest(`/api/personal-ideas/${ideaId}`, {
+            method: 'DELETE'
+        });
+    }
+
     // Экспортируем API
     window.API = {
         // Данные
@@ -244,6 +301,18 @@
         updateWishlistItem,
         deleteWishlistItem,
         parseProductUrl,
+
+        // Wishlist близких
+        getPersonWishlist,
+        bookGift,
+        unbookGift,
+        getBookedCount,
+
+        // Личные идеи
+        getPersonalIdeas,
+        addPersonalIdea,
+        updatePersonalIdea,
+        deletePersonalIdea,
 
         // Telegram WebApp
         initTelegram,

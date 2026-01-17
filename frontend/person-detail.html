@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Профиль близкого - WTG</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .person-header {
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 24px 16px;
+            margin: -16px -16px 24px -16px;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .person-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .person-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .gift-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .gift-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: var(--border);
+        }
+
+        .gift-info {
+            padding: 12px;
+        }
+
+        .gift-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .gift-price {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .booked-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--accent);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .add-idea-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+
+        .add-idea-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn" id="backBtn">←</button>
+            <h1 class="header-title">Профиль</h1>
+        </div>
+        <a href="profile.html" class="profile-icon">👤</a>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Person Header -->
+            <div class="person-header">
+                <div class="person-name" id="personName">Загрузка...</div>
+                <div class="person-info" id="personInfo"></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="wishlist">Wishlist</button>
+                <button class="tab" data-tab="ideas">Мои идеи</button>
+            </div>
+
+            <!-- Tab: Wishlist -->
+            <div class="tab-content active" id="wishlist-content">
+                <div class="gift-grid" id="wishlistGrid"></div>
+                <div class="empty-state" id="wishlistEmpty" style="display: none;">
+                    <div class="empty-icon">🎁</div>
+                    <div>Wishlist пуст</div>
+                </div>
+            </div>
+
+            <!-- Tab: My Ideas -->
+            <div class="tab-content" id="ideas-content">
+                <div class="gift-grid" id="ideasGrid"></div>
+                <div class="empty-state" id="ideasEmpty" style="display: none;">
+                    <div class="empty-icon">💡</div>
+                    <div>У вас пока нет идей подарков</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Idea Button (only visible in My Ideas tab) -->
+    <button class="add-idea-btn" id="addIdeaBtn" style="display: none;">+</button>
+
+    <!-- Modal for Gift Details / Add Idea -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">Подарок</div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        let currentPerson = null;
+        let currentTab = 'wishlist';
+        let wishlistItems = [];
+        let personalIdeas = [];
+
+        // Получаем person_id из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const personId = urlParams.get('person_id');
+
+        if (!personId) {
+            API.showAlert('Не указан ID близкого');
+            window.location.href = 'friends.html';
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            API.initTelegram();
+
+            // Загружаем данные близкого
+            await loadPersonData();
+
+            // Загружаем wishlist и идеи
+            await loadWishlist();
+            await loadPersonalIdeas();
+
+            // Кнопка назад
+            document.getElementById('backBtn').addEventListener('click', () => {
+                window.location.href = 'friends.html';
+            });
+
+            // Переключение вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+
+            // Кнопка добавить идею
+            document.getElementById('addIdeaBtn').addEventListener('click', () => {
+                showAddIdeaModal();
+            });
+
+            // Закрытие модального окна
+            document.getElementById('modal').addEventListener('click', (e) => {
+                if (e.target.id === 'modal') {
+                    closeModal();
+                }
+            });
+        });
+
+        async function loadPersonData() {
+            try {
+                const data = await API.getClosePeople();
+                currentPerson = data.people.find(p => p.person_id === personId);
+
+                if (currentPerson) {
+                    document.getElementById('personName').textContent = currentPerson.name;
+
+                    let info = [];
+                    if (currentPerson.relation) info.push(currentPerson.relation);
+                    if (currentPerson.birthdate) info.push(`🎂 ${currentPerson.birthdate}`);
+
+                    document.getElementById('personInfo').textContent = info.join(' • ');
+                }
+            } catch (error) {
+                console.error('Error loading person:', error);
+                API.showAlert('Не удалось загрузить данные');
+            }
+        }
+
+        async function loadWishlist() {
+            try {
+                const data = await API.getPersonWishlist(personId);
+                wishlistItems = data.items || [];
+                renderWishlist();
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                document.getElementById('wishlistEmpty').style.display = 'block';
+            }
+        }
+
+        async function loadPersonalIdeas() {
+            try {
+                const data = await API.getPersonalIdeas(personId);
+                personalIdeas = data.ideas || [];
+                renderPersonalIdeas();
+            } catch (error) {
+                console.error('Error loading ideas:', error);
+                document.getElementById('ideasEmpty').style.display = 'block';
+            }
+        }
+
+        function renderWishlist() {
+            const grid = document.getElementById('wishlistGrid');
+            const empty = document.getElementById('wishlistEmpty');
+
+            if (wishlistItems.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = wishlistItems.map(item => `
+                <div class="gift-card" onclick="showGiftDetails(${item.id}, 'wishlist')">
+                    ${item.image_url ? `<img src="${item.image_url}" class="gift-image" alt="${item.title}">` : '<div class="gift-image"></div>'}
+                    ${item.is_booked && !item.is_owner ? '<div class="booked-badge">Забронирован</div>' : ''}
+                    <div class="gift-info">
+                        <div class="gift-title">${item.title}</div>
+                        ${item.price ? `<div class="gift-price">${item.price}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPersonalIdeas() {
+            const grid = document.getElementById('ideasGrid');
+            const empty = document.getElementById('ideasEmpty');
+
+            if (personalIdeas.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = personalIdeas.map(idea => `
+                <div class="gift-card" onclick="showIdeaDetails(${idea.id})">
+                    ${idea.image_url ? `<img src="${idea.image_url}" class="gift-image" alt="${idea.title}">` : '<div class="gift-image"></div>'}
+                    <div class="gift-info">
+                        <div class="gift-title">${idea.title}</div>
+                        ${idea.price ? `<div class="gift-price">${idea.price}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+
+            // Переключаем вкладки
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Переключаем контент
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tabName}-content`).classList.add('active');
+
+            // Показываем/скрываем кнопку добавить идею
+            document.getElementById('addIdeaBtn').style.display = tabName === 'ideas' ? 'block' : 'none';
+        }
+
+        function showGiftDetails(itemId, source) {
+            const item = wishlistItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const isOwner = item.is_owner;
+            const isBooked = item.is_booked;
+
+            document.getElementById('modalHeader').textContent = item.title;
+            document.getElementById('modalBody').innerHTML = `
+                ${item.image_url ? `<img src="${item.image_url}" style="width: 100%; border-radius: 8px; margin-bottom: 16px;" alt="${item.title}">` : ''}
+                ${item.description ? `<p style="margin-bottom: 12px;">${item.description}</p>` : ''}
+                ${item.price ? `<p style="color: var(--accent); font-weight: 600; font-size: 18px; margin-bottom: 12px;">${item.price}</p>` : ''}
+                ${item.url ? `<a href="${item.url}" target="_blank" class="btn btn-secondary btn-block" style="margin-bottom: 8px;">Открыть ссылку</a>` : ''}
+                ${!isOwner ? (isBooked
+                    ? `<button class="btn btn-secondary btn-block" onclick="handleUnbookGift(${itemId})">Отменить бронь</button>`
+                    : `<button class="btn btn-primary btn-block" onclick="handleBookGift(${itemId})">Забронировать</button>`
+                ) : ''}
+                <button class="btn btn-secondary btn-block" onclick="closeModal()" style="margin-top: 8px;">Закрыть</button>
+            `;
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function showIdeaDetails(ideaId) {
+            const idea = personalIdeas.find(i => i.id === ideaId);
+            if (!idea) return;
+
+            document.getElementById('modalHeader').textContent = idea.title;
+            document.getElementById('modalBody').innerHTML = `
+                ${idea.image_url ? `<img src="${idea.image_url}" style="width: 100%; border-radius: 8px; margin-bottom: 16px;" alt="${idea.title}">` : ''}
+                ${idea.description ? `<p style="margin-bottom: 12px;">${idea.description}</p>` : ''}
+                ${idea.price ? `<p style="color: var(--accent); font-weight: 600; font-size: 18px; margin-bottom: 12px;">${idea.price}</p>` : ''}
+                ${idea.url ? `<a href="${idea.url}" target="_blank" class="btn btn-secondary btn-block" style="margin-bottom: 8px;">Открыть ссылку</a>` : ''}
+                <button class="btn btn-danger btn-block" onclick="handleDeleteIdea(${ideaId})">Удалить</button>
+                <button class="btn btn-secondary btn-block" onclick="closeModal()" style="margin-top: 8px;">Закрыть</button>
+            `;
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function showAddIdeaModal() {
+            document.getElementById('modalHeader').textContent = 'Добавить идею подарка';
+            document.getElementById('modalBody').innerHTML = `
+                <form id="addIdeaForm">
+                    <div class="form-group">
+                        <label>Ссылка на товар (необязательно)</label>
+                        <input type="url" id="ideaUrl" class="form-input" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>Название *</label>
+                        <input type="text" id="ideaTitle" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Цена</label>
+                        <input type="text" id="ideaPrice" class="form-input" placeholder="1000 ₽">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="ideaDescription" class="form-input" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>URL изображения</label>
+                        <input type="url" id="ideaImageUrl" class="form-input">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Добавить</button>
+                    <button type="button" class="btn btn-secondary btn-block" onclick="closeModal()" style="margin-top: 8px;">Отмена</button>
+                </form>
+            `;
+
+            // AI парсинг URL
+            document.getElementById('ideaUrl').addEventListener('blur', async function() {
+                const url = this.value.trim();
+                if (url && isValidUrl(url)) {
+                    try {
+                        const result = await API.parseProductUrl(url);
+                        if (result.success && result.data) {
+                            document.getElementById('ideaTitle').value = result.data.title || '';
+                            document.getElementById('ideaPrice').value = result.data.price || '';
+                            document.getElementById('ideaDescription').value = result.data.description || '';
+                            if (result.data.image_url) {
+                                document.getElementById('ideaImageUrl').value = result.data.image_url;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Parse error:', error);
+                    }
+                }
+            });
+
+            document.getElementById('addIdeaForm').addEventListener('submit', handleAddIdea);
+            document.getElementById('modal').classList.add('active');
+        }
+
+        async function handleBookGift(itemId) {
+            try {
+                await API.bookGift(itemId);
+                API.showAlert('Подарок забронирован!');
+                closeModal();
+                await loadWishlist();
+            } catch (error) {
+                console.error('Book error:', error);
+                API.showAlert('Не удалось забронировать');
+            }
+        }
+
+        async function handleUnbookGift(itemId) {
+            try {
+                await API.unbookGift(itemId);
+                API.showAlert('Бронь отменена');
+                closeModal();
+                await loadWishlist();
+            } catch (error) {
+                console.error('Unbook error:', error);
+                API.showAlert('Не удалось отменить бронь');
+            }
+        }
+
+        async function handleAddIdea(e) {
+            e.preventDefault();
+
+            const data = {
+                for_person_id: personId,
+                title: document.getElementById('ideaTitle').value,
+                price: document.getElementById('ideaPrice').value,
+                description: document.getElementById('ideaDescription').value,
+                url: document.getElementById('ideaUrl').value,
+                image_url: document.getElementById('ideaImageUrl').value
+            };
+
+            try {
+                await API.addPersonalIdea(data);
+                API.showAlert('Идея добавлена!');
+                closeModal();
+                await loadPersonalIdeas();
+            } catch (error) {
+                console.error('Add idea error:', error);
+                API.showAlert('Не удалось добавить идею');
+            }
+        }
+
+        async function handleDeleteIdea(ideaId) {
+            API.showConfirm('Удалить эту идею?', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await API.deletePersonalIdea(ideaId);
+                        API.showAlert('Идея удалена');
+                        closeModal();
+                        await loadPersonalIdeas();
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        API.showAlert('Не удалось удалить');
+                    }
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

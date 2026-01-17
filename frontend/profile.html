@@ -282,6 +282,17 @@
                     <button class="btn btn-primary" id="addGiftBtn">+ Добавить</button>
                 </div>
 
+                <!-- Счётчик забронированных подарков -->
+                <div id="bookedCountBadge" style="display: none; padding: 12px; background: #e8f5e9; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">🎁</span>
+                        <div>
+                            <div style="font-weight: 600; color: #2e7d32;">Забронировано подарков: <span id="bookedCount">0</span></div>
+                            <div style="font-size: 12px; color: #555;">Ваши друзья хотят подарить вам что-то особенное</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="wishlistContainer">
                     <div class="loading">Загрузка...</div>
                 </div>
@@ -494,10 +505,30 @@
                 const data = await API.getWishlist();
                 currentWishlist = data.items || [];
                 renderWishlist();
+
+                // Загружаем счётчик забронированных подарков
+                await loadBookedCount();
             } catch (error) {
                 console.error('Error loading wishlist:', error);
                 document.getElementById('wishlistContainer').innerHTML =
                     '<div class="empty-wishlist"><div class="empty-wishlist-icon">😔</div><p>Не удалось загрузить вишлист</p></div>';
+            }
+        }
+
+        // Загрузить счётчик забронированных подарков
+        async function loadBookedCount() {
+            try {
+                const data = await API.getBookedCount();
+                const count = data.count || 0;
+
+                if (count > 0) {
+                    document.getElementById('bookedCount').textContent = count;
+                    document.getElementById('bookedCountBadge').style.display = 'block';
+                } else {
+                    document.getElementById('bookedCountBadge').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading booked count:', error);
             }
         }
 

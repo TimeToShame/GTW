@@ -72,6 +72,25 @@ class UpdateWishlistItem(BaseModel):
 class ParseUrlRequest(BaseModel):
     url: str
 
+class BookGiftRequest(BaseModel):
+    item_id: int
+
+class PersonalGiftIdeaCreate(BaseModel):
+    for_person_id: str
+    title: str
+    description: Optional[str] = ''
+    price: Optional[str] = ''
+    url: Optional[str] = ''
+    image_url: Optional[str] = ''
+
+class UpdatePersonalGiftIdea(BaseModel):
+    idea_id: int
+    title: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[str] = None
+    url: Optional[str] = None
+    image_url: Optional[str] = None
+
 # === ПРОВЕРКА TELEGRAM INIT DATA ===
 
 def validate_init_data(init_data: str) -> dict:
@@ -417,6 +436,139 @@ HTML (фрагмент):
                 "image_url": None
             }
         }
+
+# === WISHLIST БЛИЗКИХ И БРОНИРОВАНИЕ ===
+
+@app.get("/api/person/{person_id}/wishlist")
+async def get_person_wishlist(person_id: str, authorization: Optional[str] = Header(None)):
+    """Получить wishlist близкого человека с учётом бронирований"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    viewer_id = str(user.get('id'))
+
+    # Получаем wishlist с бронированиями
+    items = db.get_wishlist_with_bookings(person_id, viewer_id)
+
+    return {"items": items}
+
+@app.post("/api/book-gift")
+async def book_gift(request: BookGiftRequest, authorization: Optional[str] = Header(None)):
+    """Забронировать подарок"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    booking_id = db.book_gift(request.item_id, user_id)
+
+    if booking_id is None:
+        raise HTTPException(status_code=400, detail="Gift already booked")
+
+    return {"success": True, "booking_id": booking_id}
+
+@app.delete("/api/book-gift/{item_id}")
+async def unbook_gift(item_id: int, authorization: Optional[str] = Header(None)):
+    """Отменить бронирование подарка"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    success = db.unbook_gift(item_id, user_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    return {"success": True}
+
+@app.get("/api/booked-count")
+async def get_booked_count(authorization: Optional[str] = Header(None)):
+    """Получить количество забронированных подарков пользователя"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    count = db.get_booked_count(user_id)
+
+    return {"count": count}
+
+# === ЛИЧНЫЕ ИДЕИ ПОДАРКОВ ===
+
+@app.get("/api/personal-ideas/{for_person_id}")
+async def get_personal_ideas(for_person_id: str, authorization: Optional[str] = Header(None)):
+    """Получить мои идеи подарков для конкретного близкого"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    ideas = db.get_personal_gift_ideas(user_id, for_person_id)
+
+    return {"ideas": ideas}
+
+@app.post("/api/personal-ideas")
+async def add_personal_idea(idea: PersonalGiftIdeaCreate, authorization: Optional[str] = Header(None)):
+    """Добавить личную идею подарка"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+    user_id = str(user.get('id'))
+
+    idea_id = db.add_personal_gift_idea(
+        owner_id=user_id,
+        for_person_id=idea.for_person_id,
+        title=idea.title,
+        description=idea.description,
+        price=idea.price,
+        url=idea.url,
+        image_url=idea.image_url
+    )
+
+    return {"success": True, "idea_id": idea_id}
+
+@app.put("/api/personal-ideas")
+async def update_personal_idea(update: UpdatePersonalGiftIdea, authorization: Optional[str] = Header(None)):
+    """Обновить личную идею подарка"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+
+    updates = {}
+    if update.title is not None:
+        updates['title'] = update.title
+    if update.description is not None:
+        updates['description'] = update.description
+    if update.price is not None:
+        updates['price'] = update.price
+    if update.url is not None:
+        updates['url'] = update.url
+    if update.image_url is not None:
+        updates['image_url'] = update.image_url
+
+    db.update_personal_gift_idea(update.idea_id, **updates)
+
+    return {"success": True}
+
+@app.delete("/api/personal-ideas/{idea_id}")
+async def delete_personal_idea(idea_id: int, authorization: Optional[str] = Header(None)):
+    """Удалить личную идею подарка"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    user = validate_init_data(authorization)
+
+    db.delete_personal_gift_idea(idea_id)
+
+    return {"success": True}
 
 
 if __name__ == "__main__":

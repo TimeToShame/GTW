@@ -495,9 +495,11 @@
             // Add click handlers
             container.querySelectorAll('.friend-card').forEach(card => {
                 card.addEventListener('click', () => {
-                    const id = parseInt(card.dataset.id);
-                    const person = closePeople.find(p => p.id === id);
-                    if (person) openEditModal(person);
+                    const person = closePeople.find(p => p.id === parseInt(card.dataset.id));
+                    if (person && person.person_id) {
+                        // Переходим на страницу профиля близкого
+                        window.location.href = `person-detail.html?person_id=${person.person_id}`;
+                    }
                 });
             });
         }
