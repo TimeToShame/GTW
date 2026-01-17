@@ -215,24 +215,35 @@ async def accept_invitation(inviter_id: str, authorization: Optional[str] = Head
     """Принять приглашение"""
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization required")
-    
+
     user = validate_init_data(authorization)
     invited_id = str(user.get('id'))
     invited_name = user.get('first_name', 'Пользователь')
-    
+
     # Регистрируем обоих пользователей
     db.add_user(invited_id, user.get('username'), user.get('first_name'))
-    
+
     # Записываем приглашение
     db.add_invitation(inviter_id, invited_id)
-    
+
+    # Получаем данные пригласившего
+    inviter = db.get_user(inviter_id)
+    inviter_name = inviter.get('first_name', 'Пользователь') if inviter else 'Пользователь'
+
     # Добавляем приглашённого в близкие пригласившего
     db.add_close_person(
         owner_id=inviter_id,
         name=invited_name,
         person_id=invited_id
     )
-    
+
+    # ВЗАИМНОСТЬ: Добавляем пригласившего в близкие приглашённого
+    db.add_close_person(
+        owner_id=invited_id,
+        name=inviter_name,
+        person_id=inviter_id
+    )
+
     return {"success": True, "message": "Invitation accepted"}
 
 # === ПРОФИЛЬ ===

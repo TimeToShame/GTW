@@ -497,10 +497,13 @@
                 card.addEventListener('click', () => {
                     const person = closePeople.find(p => p.id === parseInt(card.dataset.id));
                     if (person) {
-                        // Используем person_db_id вместо person_id
-                        // person_id - это Telegram ID (может не быть у вручную добавленных)
-                        // person.id - это ID из БД (есть всегда)
-                        window.location.href = `person-detail.html?person_db_id=${person.id}`;
+                        // Передаём person_db_id для поиска в БД
+                        // Если есть person_id (Telegram ID), передаём и его для wishlist
+                        let url = `person-detail.html?person_db_id=${person.id}`;
+                        if (person.person_id) {
+                            url += `&person_id=${person.person_id}`;
+                        }
+                        window.location.href = url;
                     }
                 });
             });

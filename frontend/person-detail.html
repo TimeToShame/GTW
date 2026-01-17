@@ -256,9 +256,10 @@
         let wishlistItems = [];
         let personalIdeas = [];
 
-        // Получаем person_db_id из URL
+        // Получаем параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
         const personDbId = urlParams.get('person_db_id');
+        const personIdParam = urlParams.get('person_id'); // Telegram ID если есть
 
         if (!personDbId) {
             API.showAlert('Не указан ID близкого');
@@ -273,7 +274,10 @@
             await loadPersonData();
 
             // Загружаем wishlist и идеи
-            if (currentPerson && currentPerson.person_id) {
+            // Проверяем наличие person_id (из URL параметра или из данных БД)
+            const hasPersonId = personIdParam || (currentPerson && currentPerson.person_id);
+
+            if (hasPersonId) {
                 await loadWishlist();
             } else {
                 // Если нет person_id, скрываем вкладку Wishlist и показываем только "Мои идеи"
@@ -335,12 +339,15 @@
         async function loadWishlist() {
             try {
                 // Используем person_id (Telegram ID) для получения wishlist
-                if (!currentPerson || !currentPerson.person_id) {
+                // Приоритет: параметр из URL → данные из БД
+                const telegramId = personIdParam || (currentPerson && currentPerson.person_id);
+
+                if (!telegramId) {
                     document.getElementById('wishlistEmpty').style.display = 'block';
                     return;
                 }
 
-                const data = await API.getPersonWishlist(currentPerson.person_id);
+                const data = await API.getPersonWishlist(telegramId);
                 wishlistItems = data.items || [];
                 renderWishlist();
             } catch (error) {
@@ -357,7 +364,10 @@
                 }
 
                 // Для личных идей используем person_id если есть, иначе используем персональный идентификатор
-                const forPersonId = currentPerson.person_id || `manual_${currentPerson.id}`;
+                // Приоритет: параметр из URL → данные из БД → manual ID
+                const telegramId = personIdParam || currentPerson.person_id;
+                const forPersonId = telegramId || `manual_${currentPerson.id}`;
+
                 const data = await API.getPersonalIdeas(forPersonId);
                 personalIdeas = data.ideas || [];
                 renderPersonalIdeas();
@@ -548,7 +558,8 @@
             e.preventDefault();
 
             // Используем тот же идентификатор что и в loadPersonalIdeas
-            const forPersonId = currentPerson.person_id || `manual_${currentPerson.id}`;
+            const telegramId = personIdParam || currentPerson.person_id;
+            const forPersonId = telegramId || `manual_${currentPerson.id}`;
 
             const data = {
                 for_person_id: forPersonId,
