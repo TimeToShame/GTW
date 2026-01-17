@@ -6,6 +6,7 @@
     <title>Мои близкие - WTG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/icons.css">
     <style>
         .friends-header {
             display: flex;
@@ -454,24 +455,30 @@
             emptyState.style.display = 'none';
             countEl.textContent = `${closePeople.length} ${declension(closePeople.length, ['человек', 'человека', 'человек'])}`;
 
-            container.innerHTML = closePeople.map(person => {
+            container.innerHTML = closePeople.map((person, index) => {
                 const age = calculateAge(person.birthdate);
                 const ageText = age ? `${age} ${declension(age, ['год', 'года', 'лет'])}` : '';
-                const genderIcon = person.gender === 'm' ? '👨' : person.gender === 'f' ? '👩' : '👤';
+
+                // SVG иконки вместо эмодзи
+                const genderIconMale = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-male"><circle cx="10" cy="14" r="6" stroke="currentColor" stroke-width="2"/><path d="M15 9L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M15 3H21V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+                const genderIconFemale = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-female"><circle cx="12" cy="8" r="6" stroke="currentColor" stroke-width="2"/><path d="M12 14V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 18H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+                const genderIconDefault = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+                const genderIcon = person.gender === 'm' ? genderIconMale : person.gender === 'f' ? genderIconFemale : genderIconDefault;
                 const daysUntil = getDaysUntilBirthday(person.birthdate);
 
                 let birthdayBadge = '';
                 if (daysUntil !== null) {
+                    const cakeIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; vertical-align: middle;"><path d="M20 21H4C3.46957 21 2.96086 20.7893 2.58579 20.4142C2.21071 20.0391 2 19.5304 2 19V17C2 16.4696 2.21071 15.9609 2.58579 15.5858C2.96086 15.2107 3.46957 15 4 15H20C20.5304 15 21.0391 15.2107 21.4142 15.5858C21.7893 15.9609 22 16.4696 22 17V19C22 19.5304 21.7893 20.0391 21.4142 20.4142C21.0391 20.7893 20.5304 21 20 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 15V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
                     if (daysUntil === 0) {
-                        birthdayBadge = '<span class="birthday-badge">🎂 Сегодня!</span>';
+                        birthdayBadge = `<span class="birthday-badge badge-glow">${cakeIcon}Сегодня!</span>`;
                     } else if (daysUntil <= 7) {
-                        birthdayBadge = `<span class="days-until">🎂 через ${daysUntil} ${declension(daysUntil, ['день', 'дня', 'дней'])}</span>`;
+                        birthdayBadge = `<span class="days-until status-icon warning">${cakeIcon}через ${daysUntil} ${declension(daysUntil, ['день', 'дня', 'дней'])}</span>`;
                     } else if (daysUntil <= 30) {
-                        birthdayBadge = `<span class="days-until">🎂 через ${daysUntil} дн.</span>`;
+                        birthdayBadge = `<span class="days-until status-icon">${cakeIcon}через ${daysUntil} дн.</span>`;
                     }
                 }
 
-                // Получаем relation из interests (временно, пока не добавим отдельное поле)
                 const relation = person.relation || '';
 
                 // Аватар: фото или иконка
