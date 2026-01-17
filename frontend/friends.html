@@ -459,7 +459,7 @@
                 const ageText = age ? `${age} ${declension(age, ['год', 'года', 'лет'])}` : '';
                 const genderIcon = person.gender === 'm' ? '👨' : person.gender === 'f' ? '👩' : '👤';
                 const daysUntil = getDaysUntilBirthday(person.birthdate);
-                
+
                 let birthdayBadge = '';
                 if (daysUntil !== null) {
                     if (daysUntil === 0) {
@@ -474,10 +474,15 @@
                 // Получаем relation из interests (временно, пока не добавим отдельное поле)
                 const relation = person.relation || '';
 
+                // Аватар: фото или иконка
+                const avatarContent = person.photo_url
+                    ? `<img src="${escapeHtml(person.photo_url)}" alt="avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
+                    : genderIcon;
+
                 return `
                     <div class="friend-card" data-id="${person.id}">
                         <div class="friend-card-header">
-                            <div class="friend-avatar">${genderIcon}</div>
+                            <div class="friend-avatar">${avatarContent}</div>
                             <div class="friend-info">
                                 <div class="friend-name">${escapeHtml(person.name)}</div>
                                 ${relation ? `<div class="friend-relation">${escapeHtml(relation)}</div>` : ''}

@@ -53,6 +53,7 @@ class DeletePeople(BaseModel):
 class UpdateProfile(BaseModel):
     birthdate: Optional[str] = None
     interests: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class WishlistItem(BaseModel):
     title: str
@@ -278,7 +279,8 @@ async def update_profile(update: UpdateProfile, authorization: Optional[str] = H
     db.update_user_profile(
         user_id,
         birthdate=update.birthdate,
-        interests=update.interests
+        interests=update.interests,
+        photo_url=update.photo_url
     )
 
     return {"success": True}

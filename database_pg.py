@@ -22,6 +22,7 @@ class User(Base):
     first_name = Column(String)
     birthdate = Column(String)  # Дата рождения в формате YYYY-MM-DD
     interests = Column(Text)  # Интересы пользователя для AI и друзей
+    photo_url = Column(String)  # URL фото профиля
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class ClosePerson(Base):
@@ -124,6 +125,12 @@ class Database:
                 except Exception as e:
                     print(f"Migration: users.interests - {e}")
 
+                # Добавляем photo_url в users
+                try:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url VARCHAR"))
+                except Exception as e:
+                    print(f"Migration: users.photo_url - {e}")
+
                 conn.commit()
         except Exception as e:
             print(f"Migration general error: {e}")
@@ -163,13 +170,14 @@ class Database:
                     'first_name': user.first_name,
                     'birthdate': user.birthdate,
                     'interests': user.interests,
+                    'photo_url': user.photo_url,
                     'created_at': user.created_at.isoformat() if user.created_at else None
                 }
             return None
         finally:
             session.close()
 
-    def update_user_profile(self, user_id, birthdate=None, interests=None):
+    def update_user_profile(self, user_id, birthdate=None, interests=None, photo_url=None):
         """Обновить профиль пользователя"""
         session = self.get_session()
         try:
@@ -179,6 +187,8 @@ class Database:
                     user.birthdate = birthdate
                 if interests is not None:
                     user.interests = interests
+                if photo_url is not None:
+                    user.photo_url = photo_url
                 self.safe_commit(session)
                 return True
             return False
@@ -213,20 +223,37 @@ class Database:
     def get_close_people(self, owner_id):
         session = self.get_session()
         try:
+            # Получаем близких и подтягиваем актуальные данные из users для пользователей Telegram
             people = session.query(ClosePerson).filter_by(owner_id=str(owner_id)).order_by(ClosePerson.created_at.desc()).all()
-            
-            return [{
-                'id': p.id,
-                'owner_id': p.owner_id,
-                'person_id': p.person_id,
-                'name': p.name,
-                'relation': p.relation,
-                'gender': p.gender,
-                'birthdate': p.birthdate,
-                'interests': p.interests,
-                'age': p.age,
-                'created_at': p.created_at.isoformat() if p.created_at else None
-            } for p in people]
+
+            result = []
+            for p in people:
+                person_data = {
+                    'id': p.id,
+                    'owner_id': p.owner_id,
+                    'person_id': p.person_id,
+                    'name': p.name,
+                    'relation': p.relation,
+                    'gender': p.gender,
+                    'birthdate': p.birthdate,
+                    'interests': p.interests,
+                    'age': p.age,
+                    'created_at': p.created_at.isoformat() if p.created_at else None,
+                    'photo_url': None
+                }
+
+                # Если есть person_id (пользователь Telegram), подтягиваем актуальные данные
+                if p.person_id:
+                    user = session.query(User).filter_by(user_id=str(p.person_id)).first()
+                    if user:
+                        # Приоритет данным из users для пользователей Telegram
+                        person_data['birthdate'] = user.birthdate or p.birthdate
+                        person_data['interests'] = user.interests or p.interests
+                        person_data['photo_url'] = user.photo_url
+
+                result.append(person_data)
+
+            return result
         finally:
             session.close()
     
