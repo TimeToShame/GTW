@@ -6,27 +6,46 @@
     <title>Мой профиль - WTG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/icons.css">
     <style>
         /* Профильные стили */
         .profile-header {
             text-align: center;
-            padding: 24px 16px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 16px;
-            margin-bottom: 16px;
+            padding: 32px 16px;
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(145deg, rgba(255,149,0,0.05) 0%, transparent 100%);
+            pointer-events: none;
         }
 
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 96px;
+            height: 96px;
             border-radius: 50%;
-            margin: 0 auto 12px;
-            background: var(--tg-theme-button-color, #3390ec);
+            margin: 0 auto 16px;
+            background: var(--gradient-primary);
+            border: 3px solid var(--accent);
+            box-shadow: var(--glow-orange);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            color: white;
+            font-size: 42px;
+            color: #000;
+            position: relative;
+            z-index: 1;
         }
 
         .profile-avatar img {
@@ -37,15 +56,20 @@
         }
 
         .profile-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 4px;
-            color: var(--tg-theme-text-color, #000);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
         }
 
         .profile-username {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999);
+            font-size: 15px;
+            color: var(--accent);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
         }
 
         .form-group {
@@ -90,10 +114,19 @@
         }
 
         .wishlist-item {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 12px;
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
             overflow: hidden;
             position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wishlist-item:hover {
+            transform: translateY(-4px);
+            background: var(--gradient-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), var(--glow-orange);
+            border-color: var(--accent);
         }
 
         .wishlist-item-image {
@@ -137,27 +170,43 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 149, 0, 0.3);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
+            color: var(--accent);
+            transition: all 0.2s;
+        }
+
+        .wishlist-item-delete:hover {
+            background: rgba(255, 149, 0, 0.2);
+            transform: scale(1.1);
+            border-color: var(--accent);
         }
 
         .empty-wishlist {
             text-align: center;
-            padding: 40px 16px;
-            color: var(--tg-theme-hint-color, #999);
+            padding: 48px 16px;
+            color: var(--text-secondary);
         }
 
         .empty-wishlist-icon {
-            font-size: 64px;
             margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .empty-wishlist-icon svg {
+            width: 64px;
+            height: 64px;
+            opacity: 0.5;
         }
 
         .section-header {
@@ -235,7 +284,10 @@
             <!-- Профиль -->
             <div class="profile-header">
                 <div class="profile-avatar" id="profileAvatar">
-                    👤
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                 </div>
                 <div class="profile-name" id="profileName">Загрузка...</div>
                 <div class="profile-username" id="profileUsername"></div>
@@ -277,7 +329,14 @@
                 <h3 class="card-title">Поделиться профилем</h3>
                 <p class="card-text mb-16">Отправь ссылку друзьям, чтобы они могли добавить тебя в близкие</p>
                 <button class="btn btn-primary btn-block" id="shareProfileBtn">
-                    📤 Поделиться
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8.59 13.51L15.42 17.49" stroke="currentColor" stroke-width="2"/>
+                        <path d="M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Поделиться
                 </button>
             </div>
 
@@ -289,12 +348,18 @@
                 </div>
 
                 <!-- Счётчик забронированных подарков -->
-                <div id="bookedCountBadge" style="display: none; padding: 12px; background: #e8f5e9; border-radius: 8px; margin-bottom: 16px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 20px;">🎁</span>
+                <div id="bookedCountBadge" style="display: none; padding: 16px; background: var(--gradient-card); border: 1px solid var(--accent); border-radius: 12px; margin-bottom: 16px; box-shadow: var(--glow-orange);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent); flex-shrink: 0;">
+                            <path d="M20 12V21H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M22 7H2V12H22V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 21V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 7H7.5C6.83696 7 6.20107 6.73661 5.73223 6.26777C5.26339 5.79893 5 5.16304 5 4.5C5 3.83696 5.26339 3.20107 5.73223 2.73223C6.20107 2.26339 6.83696 2 7.5 2C11 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 7H16.5C17.163 7 17.7989 6.73661 18.2678 6.26777C18.7366 5.79893 19 5.16304 19 4.5C19 3.83696 18.7366 3.20107 18.2678 2.73223C17.7989 2.26339 17.163 2 16.5 2C13 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <div>
-                            <div style="font-weight: 600; color: #2e7d32;">Забронировано подарков: <span id="bookedCount">0</span></div>
-                            <div style="font-size: 12px; color: #555;">Ваши друзья хотят подарить вам что-то особенное</div>
+                            <div style="font-weight: 600; color: var(--accent); font-size: 16px;">Забронировано подарков: <span id="bookedCount">0</span></div>
+                            <div style="font-size: 13px; color: var(--text-secondary);">Ваши друзья хотят подарить вам что-то особенное</div>
                         </div>
                     </div>
                 </div>
@@ -440,8 +505,17 @@
                     document.getElementById('profileAvatar').innerHTML =
                         `<img src="${user.photo_url}" alt="Avatar">`;
                 } else {
-                    const initials = user && user.first_name ? user.first_name[0].toUpperCase() : '👤';
-                    document.getElementById('profileAvatar').textContent = initials;
+                    const initials = user && user.first_name ? user.first_name[0].toUpperCase() : '';
+                    if (initials) {
+                        document.getElementById('profileAvatar').textContent = initials;
+                    } else {
+                        document.getElementById('profileAvatar').innerHTML = `
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                                <path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        `;
+                    }
                 }
 
                 // Имя
@@ -552,7 +626,15 @@
             if (currentWishlist.length === 0) {
                 container.innerHTML = `
                     <div class="empty-wishlist">
-                        <div class="empty-wishlist-icon">🎁</div>
+                        <div class="empty-wishlist-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 12V21H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M22 7H2V12H22V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 21V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 7H7.5C6.83696 7 6.20107 6.73661 5.73223 6.26777C5.26339 5.79893 5 5.16304 5 4.5C5 3.83696 5.26339 3.20107 5.73223 2.73223C6.20107 2.26339 6.83696 2 7.5 2C11 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 7H16.5C17.163 7 17.7989 6.73661 18.2678 6.26777C18.7366 5.79893 19 5.16304 19 4.5C19 3.83696 18.7366 3.20107 18.2678 2.73223C17.7989 2.26339 17.163 2 16.5 2C13 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
                         <p>Вишлист пуст</p>
                         <small>Добавьте желаемые подарки</small>
                     </div>
@@ -569,7 +651,11 @@
 
                 const imageHtml = item.image_url
                     ? `<img src="${item.image_url}" alt="${item.title}">`
-                    : '🎁';
+                    : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent);">
+                        <path d="M20 12V21H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 7H2V12H22V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 21V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>`;
 
                 itemEl.innerHTML = `
                     <div class="wishlist-item-image">${imageHtml}</div>
