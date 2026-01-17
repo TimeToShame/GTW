@@ -252,7 +252,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Дата рождения</label>
-                    <input type="date" class="form-input" id="birthdateInput">
+                    <input type="date" class="form-input" id="birthdateInput" placeholder="Выберите дату">
                 </div>
 
                 <div class="form-group">
@@ -370,9 +370,42 @@
             document.getElementById('giftUrlInput').addEventListener('blur', async function() {
                 const url = this.value.trim();
                 if (url && isValidUrl(url)) {
-                    // Пока просто заполним название из URL (в будущем - AI парсинг)
-                    if (!document.getElementById('giftTitleInput').value) {
-                        document.getElementById('giftTitleInput').value = extractDomainName(url);
+                    // Показываем индикатор загрузки
+                    const saveBtn = document.getElementById('saveGiftBtn');
+                    const originalText = saveBtn.textContent;
+                    saveBtn.textContent = 'Анализирую товар...';
+                    saveBtn.disabled = true;
+
+                    try {
+                        const result = await API.parseProductUrl(url);
+
+                        if (result.success && result.data) {
+                            // Автозаполнение полей
+                            if (result.data.title && !document.getElementById('giftTitleInput').value) {
+                                document.getElementById('giftTitleInput').value = result.data.title;
+                            }
+                            if (result.data.description && !document.getElementById('giftDescriptionInput').value) {
+                                document.getElementById('giftDescriptionInput').value = result.data.description;
+                            }
+                            if (result.data.price && !document.getElementById('giftPriceInput').value) {
+                                document.getElementById('giftPriceInput').value = result.data.price;
+                            }
+                            if (result.data.image_url && !document.getElementById('giftImageInput').value) {
+                                document.getElementById('giftImageInput').value = result.data.image_url;
+                            }
+                        } else if (!document.getElementById('giftTitleInput').value) {
+                            // Fallback - используем домен
+                            document.getElementById('giftTitleInput').value = extractDomainName(url);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка парсинга URL:', error);
+                        // Fallback - используем домен
+                        if (!document.getElementById('giftTitleInput').value) {
+                            document.getElementById('giftTitleInput').value = extractDomainName(url);
+                        }
+                    } finally {
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
                     }
                 }
             });
@@ -442,7 +475,7 @@
         function shareProfile() {
             const user = API.getTelegramUser();
             if (user && user.id) {
-                const inviteLink = `https://t.me/wtg_gift_bot?start=invite_${user.id}`;
+                const inviteLink = `https://t.me/whataagift_bot?start=invite_${user.id}`;
                 const text = `Привет! Добавь меня в близкие в WTG - What To Gift`;
 
                 if (window.Telegram && window.Telegram.WebApp) {

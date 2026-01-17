@@ -141,6 +141,14 @@
         });
     }
 
+    // Парсинг URL товара
+    async function parseProductUrl(url) {
+        return apiRequest('/api/parse-url', {
+            method: 'POST',
+            body: JSON.stringify({ url })
+        });
+    }
+
     // === TELEGRAM WEBAPP ===
 
     // Инициализация Telegram WebApp
@@ -235,6 +243,7 @@
         addWishlistItem,
         updateWishlistItem,
         deleteWishlistItem,
+        parseProductUrl,
 
         // Telegram WebApp
         initTelegram,

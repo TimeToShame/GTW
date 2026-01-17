@@ -9,9 +9,12 @@ from urllib.parse import parse_qs
 from database_pg import db
 import os
 from dotenv import load_dotenv
+import httpx
+import re
 
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 
 app = FastAPI()
 
@@ -65,6 +68,9 @@ class UpdateWishlistItem(BaseModel):
     price: Optional[str] = None
     url: Optional[str] = None
     image_url: Optional[str] = None
+
+class ParseUrlRequest(BaseModel):
+    url: str
 
 # === ПРОВЕРКА TELEGRAM INIT DATA ===
 
@@ -317,6 +323,100 @@ async def delete_wishlist_item(item_id: int, authorization: Optional[str] = Head
     db.delete_wishlist_item(item_id)
 
     return {"success": True}
+
+# === ПАРСИНГ URL ===
+
+@app.post("/api/parse-url")
+async def parse_product_url(request: ParseUrlRequest, authorization: Optional[str] = Header(None)):
+    """Парсинг товара по URL с помощью AI"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+
+    validate_init_data(authorization)
+
+    try:
+        # Получаем содержимое страницы
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(request.url, follow_redirects=True)
+            html_content = response.text
+
+        # Извлекаем title страницы для базового случая
+        title_match = re.search(r'<title>(.*?)</title>', html_content, re.IGNORECASE)
+        page_title = title_match.group(1) if title_match else "Товар"
+
+        # Ограничиваем размер HTML для AI (берём первые 8000 символов)
+        html_snippet = html_content[:8000]
+
+        # Запрос к AI для извлечения данных о товаре
+        prompt = f"""Проанализируй HTML страницы товара и извлеки следующую информацию:
+1. Название товара
+2. Цена (с валютой)
+3. Краткое описание (1-2 предложения)
+4. URL изображения товара (главное фото)
+
+URL страницы: {request.url}
+Title страницы: {page_title}
+
+HTML (фрагмент):
+{html_snippet}
+
+Верни ответ СТРОГО в формате JSON без дополнительного текста:
+{{
+  "title": "название товара",
+  "price": "цена с валютой",
+  "description": "краткое описание",
+  "image_url": "URL изображения или null"
+}}"""
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            ai_response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://gtw-lq6s.onrender.com",
+                    "X-Title": "WTG URL Parser"
+                },
+                json={
+                    "model": "google/gemini-2.0-flash-exp:free",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.3
+                }
+            )
+
+        ai_data = ai_response.json()
+        ai_content = ai_data["choices"][0]["message"]["content"]
+
+        # Извлекаем JSON из ответа AI
+        json_match = re.search(r'\{[\s\S]*\}', ai_content)
+        if json_match:
+            product_data = json.loads(json_match.group(0))
+        else:
+            # Fallback если AI не вернул JSON
+            product_data = {
+                "title": page_title,
+                "price": "",
+                "description": "",
+                "image_url": None
+            }
+
+        return {
+            "success": True,
+            "data": product_data
+        }
+
+    except Exception as e:
+        # В случае ошибки возвращаем базовые данные
+        return {
+            "success": False,
+            "error": str(e),
+            "data": {
+                "title": page_title if 'page_title' in locals() else "Товар",
+                "price": "",
+                "description": "",
+                "image_url": None
+            }
+        }
 
 
 if __name__ == "__main__":
