@@ -256,11 +256,11 @@
         let wishlistItems = [];
         let personalIdeas = [];
 
-        // Получаем person_id из URL
+        // Получаем person_db_id из URL
         const urlParams = new URLSearchParams(window.location.search);
-        const personId = urlParams.get('person_id');
+        const personDbId = urlParams.get('person_db_id');
 
-        if (!personId) {
+        if (!personDbId) {
             API.showAlert('Не указан ID близкого');
             window.location.href = 'friends.html';
         }
@@ -273,7 +273,13 @@
             await loadPersonData();
 
             // Загружаем wishlist и идеи
-            await loadWishlist();
+            if (currentPerson && currentPerson.person_id) {
+                await loadWishlist();
+            } else {
+                // Если нет person_id, скрываем вкладку Wishlist и показываем только "Мои идеи"
+                document.querySelector('[data-tab="wishlist"]').style.display = 'none';
+                switchTab('ideas');
+            }
             await loadPersonalIdeas();
 
             // Кнопка назад
@@ -305,7 +311,8 @@
         async function loadPersonData() {
             try {
                 const data = await API.getClosePeople();
-                currentPerson = data.people.find(p => p.person_id === personId);
+                // Ищем по person_db_id (ID из БД)
+                currentPerson = data.people.find(p => p.id === parseInt(personDbId));
 
                 if (currentPerson) {
                     document.getElementById('personName').textContent = currentPerson.name;
@@ -315,6 +322,9 @@
                     if (currentPerson.birthdate) info.push(`🎂 ${currentPerson.birthdate}`);
 
                     document.getElementById('personInfo').textContent = info.join(' • ');
+                } else {
+                    API.showAlert('Близкий человек не найден');
+                    window.location.href = 'friends.html';
                 }
             } catch (error) {
                 console.error('Error loading person:', error);
@@ -324,7 +334,13 @@
 
         async function loadWishlist() {
             try {
-                const data = await API.getPersonWishlist(personId);
+                // Используем person_id (Telegram ID) для получения wishlist
+                if (!currentPerson || !currentPerson.person_id) {
+                    document.getElementById('wishlistEmpty').style.display = 'block';
+                    return;
+                }
+
+                const data = await API.getPersonWishlist(currentPerson.person_id);
                 wishlistItems = data.items || [];
                 renderWishlist();
             } catch (error) {
@@ -335,7 +351,14 @@
 
         async function loadPersonalIdeas() {
             try {
-                const data = await API.getPersonalIdeas(personId);
+                if (!currentPerson) {
+                    document.getElementById('ideasEmpty').style.display = 'block';
+                    return;
+                }
+
+                // Для личных идей используем person_id если есть, иначе используем персональный идентификатор
+                const forPersonId = currentPerson.person_id || `manual_${currentPerson.id}`;
+                const data = await API.getPersonalIdeas(forPersonId);
                 personalIdeas = data.ideas || [];
                 renderPersonalIdeas();
             } catch (error) {
@@ -524,8 +547,11 @@
         async function handleAddIdea(e) {
             e.preventDefault();
 
+            // Используем тот же идентификатор что и в loadPersonalIdeas
+            const forPersonId = currentPerson.person_id || `manual_${currentPerson.id}`;
+
             const data = {
-                for_person_id: personId,
+                for_person_id: forPersonId,
                 title: document.getElementById('ideaTitle').value,
                 price: document.getElementById('ideaPrice').value,
                 description: document.getElementById('ideaDescription').value,

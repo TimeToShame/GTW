@@ -496,9 +496,11 @@
             container.querySelectorAll('.friend-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const person = closePeople.find(p => p.id === parseInt(card.dataset.id));
-                    if (person && person.person_id) {
-                        // Переходим на страницу профиля близкого
-                        window.location.href = `person-detail.html?person_id=${person.person_id}`;
+                    if (person) {
+                        // Используем person_db_id вместо person_id
+                        // person_id - это Telegram ID (может не быть у вручную добавленных)
+                        // person.id - это ID из БД (есть всегда)
+                        window.location.href = `person-detail.html?person_db_id=${person.id}`;
                     }
                 });
             });
